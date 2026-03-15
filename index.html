@@ -3,571 +3,600 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POLYFARM — Predictive Intelligence</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>POLYFARM — Live Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --obsidian: #0a0a0f;
-    --obsidian-light: #101018;
-    --obsidian-mid: #16161f;
-    --obsidian-surface: #1e1e2a;
-    --electric: #2d7ff9;
-    --electric-dim: rgba(45, 127, 249, 0.12);
-    --electric-glow: rgba(45, 127, 249, 0.35);
-    --text-primary: #e8e8ef;
-    --text-secondary: #8888a0;
-    --text-muted: #50506a;
-    --green: #00c48c;
-    --green-dim: rgba(0, 196, 140, 0.12);
-    --red: #ff4757;
-    --red-dim: rgba(255, 71, 87, 0.12);
-    --border: rgba(255, 255, 255, 0.05);
-    --border-hover: rgba(45, 127, 249, 0.15);
-  }
+:root {
+  --bg: #080b10;
+  --bg1: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.10);
+  --blue: #58a6ff;
+  --blue-dim: rgba(88,166,255,0.10);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.10);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.10);
+  --yellow: #d29922;
+  --yellow-dim: rgba(210,153,34,0.10);
+  --purple: #bc8cff;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:2px; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* Layout */
+.app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:52px; background:var(--bg1); border-bottom:1px solid var(--border); flex-shrink:0; }
+.topbar-left { display:flex; align-items:center; gap:12px; }
+.logo { font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:0.04em; color:var(--text); }
+.logo span { color:var(--blue); }
+.badge-live { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--green); background:var(--green-dim); border:1px solid rgba(63,185,80,0.2); padding:2px 8px; border-radius:3px; font-family:var(--mono); }
+.dot-live { width:5px; height:5px; border-radius:50%; background:var(--green); animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.topbar-right { font-family:var(--mono); font-size:10px; color:var(--text3); }
 
-  body {
-    background: var(--obsidian);
-    color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+/* Nav tabs */
+.tabs { display:flex; align-items:center; gap:1px; padding:0 20px; background:var(--bg1); border-bottom:1px solid var(--border); flex-shrink:0; }
+.tab { padding:10px 16px; font-size:12px; font-weight:500; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; white-space:nowrap; user-select:none; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.tab-badge { display:inline-block; font-size:9px; font-family:var(--mono); background:var(--bg3); padding:1px 5px; border-radius:3px; margin-left:5px; color:var(--text3); }
+.tab.active .tab-badge { background:var(--blue-dim); color:var(--blue); }
 
-  /* Noise overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-  }
+/* Content */
+.content { flex:1; overflow:hidden; position:relative; }
+.panel { display:none; height:100%; overflow-y:auto; padding:20px; }
+.panel.active { display:block; }
 
-  .font-display { font-family: 'Playfair Display', serif; }
-  .font-mono { font-family: 'JetBrains Mono', monospace; }
+/* Cards */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:16px 20px; }
+.card-sm { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:12px 16px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media(max-width:900px) { .grid4{grid-template-columns:repeat(2,1fr);} .grid3{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:600px) { .grid4{grid-template-columns:1fr 1fr;} .grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} }
 
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: var(--obsidian); }
-  ::-webkit-scrollbar-thumb { background: var(--obsidian-surface); }
+/* Stat card */
+.stat-label { font-size:10px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+.stat-value { font-family:var(--mono); font-size:22px; font-weight:600; line-height:1; }
+.stat-sub { font-size:10px; color:var(--text3); margin-top:6px; font-family:var(--mono); }
+.stat-delta { font-size:11px; font-weight:600; margin-top:4px; }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulseDot {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 196, 140, 0.5); }
-    50% { box-shadow: 0 0 0 4px rgba(0, 196, 140, 0); }
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-8px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
+/* Colors */
+.green { color:var(--green); }
+.red { color:var(--red); }
+.blue { color:var(--blue); }
+.yellow { color:var(--yellow); }
+.muted { color:var(--text2); }
+.dim { color:var(--text3); }
 
-  .animate-in {
-    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
-  }
+/* Table */
+.tbl { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11px; }
+.tbl th { text-align:left; padding:8px 12px; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); background:var(--bg3); border-bottom:1px solid var(--border); font-weight:500; white-space:nowrap; }
+.tbl td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text2); vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr:hover td { background:rgba(255,255,255,0.015); }
+.tbl .main { color:var(--text); font-size:12px; max-width:320px; }
 
-  .stat-card {
-    background: var(--obsidian-light);
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .stat-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-1px);
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--electric) 50%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  .stat-card:hover::before { opacity: 0.6; }
+/* Pills */
+.pill { display:inline-block; font-size:9px; font-family:var(--mono); letter-spacing:0.06em; padding:2px 7px; border-radius:3px; font-weight:600; }
+.pill-yes { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(88,166,255,0.2); }
+.pill-no  { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,81,73,0.2); }
+.pill-open   { background:var(--yellow-dim); color:var(--yellow); border:1px solid rgba(210,153,34,0.2); }
+.pill-won    { background:var(--green-dim); color:var(--green); border:1px solid rgba(63,185,80,0.2); }
+.pill-lost   { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,81,73,0.2); }
+.pill-skip   { background:rgba(72,79,88,0.3); color:var(--text3); border:1px solid rgba(72,79,88,0.3); }
+.pill-bet    { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(88,166,255,0.2); }
 
-  .conviction-bar-bg {
-    height: 2px;
-    background: var(--obsidian-surface);
-    position: relative;
-    overflow: hidden;
-  }
-  .conviction-fill {
-    height: 100%;
-    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+/* Progress bar */
+.bar-bg { height:3px; background:var(--bg3); border-radius:2px; overflow:hidden; margin-top:6px; }
+.bar-fill { height:100%; border-radius:2px; transition:width 1s ease; }
 
-  .decision-row {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.2s ease;
-  }
-  .decision-row:hover { background: rgba(45, 127, 249, 0.02); }
-  .decision-row:last-child { border-bottom: none; }
+/* Section header */
+.section-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.section-title { font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text2); }
+.section-sub { font-size:10px; color:var(--text3); font-family:var(--mono); }
 
-  .verdict-buy {
-    border-left: 2px solid var(--electric);
-    color: var(--electric);
-  }
-  .verdict-skip {
-    border-left: 2px solid var(--text-muted);
-    color: var(--text-muted);
-  }
+/* Empty state */
+.empty { text-align:center; padding:48px 20px; color:var(--text3); }
+.empty-icon { font-size:28px; margin-bottom:12px; opacity:0.4; }
+.empty-text { font-size:12px; }
 
-  .pl-positive { color: var(--green); }
-  .pl-negative { color: var(--red); }
+/* Divider */
+.divider { height:1px; background:var(--border); margin:16px 0; }
 
-  .panel {
-    background: var(--obsidian-light);
-    border: 1px solid var(--border);
-  }
+/* Decision analysis card */
+.dec-card { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; }
+.dec-card:hover { border-color:var(--border2); }
+.dec-card.approved { border-left:2px solid var(--blue); }
+.dec-card.rejected { border-left:2px solid var(--bg3); }
+.dec-hdr { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.dec-question { font-size:12px; color:var(--text); margin-bottom:4px; line-height:1.4; }
+.dec-meta { font-size:10px; color:var(--text3); font-family:var(--mono); }
+.dec-body { display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.dec-body.open { display:block; }
+.dec-signal-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:10px; font-family:var(--mono); }
+.dec-signal-row:last-child { border-bottom:none; }
+.signal-name { color:var(--text2); }
+.signal-val { font-weight:600; }
+.signal-pos { color:var(--green); }
+.signal-neg { color:var(--red); }
+.signal-neu { color:var(--text3); }
 
-  #map {
-    height: 100%;
-    min-height: 360px;
-    background: var(--obsidian);
-  }
-  @media (max-width: 767px) {
-    #map { min-height: 250px; }
-  }
-  .leaflet-container { background: var(--obsidian) !important; }
-  .leaflet-popup-content-wrapper {
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-  }
-  .leaflet-popup-content { margin: 0 !important; }
-  .leaflet-popup-tip { display: none !important; }
+/* System tab */
+.sys-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:11px; }
+.sys-row:last-child { border-bottom:none; }
+.sys-key { color:var(--text2); font-family:var(--mono); }
+.sys-val { font-family:var(--mono); font-weight:500; }
 
-  .section-label {
-    font-size: 9px;
-    letter-spacing: 3.5px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .divider { height: 1px; background: var(--border); }
-
-  /* PL badge glow */
-  .pl-badge-positive {
-    background: var(--green-dim);
-    border: 1px solid rgba(0, 196, 140, 0.2);
-  }
-  .pl-badge-negative {
-    background: var(--red-dim);
-    border: 1px solid rgba(255, 71, 87, 0.2);
-  }
+/* Chart container */
+.chart-wrap { position:relative; }
 </style>
 </head>
 <body>
-
 <script>
-// ── Data Injection (Python replaces these placeholders) ─────────────────────
 const PORTFOLIO = {"starting_capital": 100, "cash": 0.0, "open_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "news": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "direction": "UP", "position": "YES", "entry_price": 0.46, "estimated_prob": 0.6784155045280025, "stake": 8.0, "potential_payout": 17.39, "potential_profit": 9.39, "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:36.065488", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_002", "market": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "news": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "direction": "UP", "position": "YES", "entry_price": 0.72, "estimated_prob": 0.9004609741558446, "stake": 8.0, "potential_payout": 11.11, "potential_profit": 3.11, "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:45.396838", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_003", "market": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.5234581349043829, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:05.311196", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_004", "market": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:20.699322", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_005", "market": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.69, "estimated_prob": 0.8998000337148219, "stake": 8.0, "potential_payout": 11.59, "potential_profit": 3.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:21.603219", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_006", "market": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "news": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:27.013066", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_007", "market": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.26, "estimated_prob": 0.45451419883021227, "stake": 8.0, "potential_payout": 30.77, "potential_profit": 22.77, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:32.108358", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_008", "market": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.67, "estimated_prob": 0.8827578551591637, "stake": 8.0, "potential_payout": 11.94, "potential_profit": 3.94, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:00.470816", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_009", "market": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.21, "estimated_prob": 0.2993808552445522, "stake": 7.02, "potential_payout": 33.43, "potential_profit": 26.41, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:03.508341", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_010", "market": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "news": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:05.147268", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_011", "market": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.83, "estimated_prob": 0.9562717971088787, "stake": 8.0, "potential_payout": 9.64, "potential_profit": 1.64, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:12.117070", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_012", "market": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.09, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 88.89, "potential_profit": 80.89, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:15.601867", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_013", "market": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.82, "estimated_prob": 0.97, "stake": 4.98, "potential_payout": 6.07, "potential_profit": 1.09, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:25.166369", "resolved_at": null, "result": null, "pl": null}], "closed_bets": [], "total_pl": 0};
-const DECISIONS = [{"approved": false, "market_q": "Will the price of XRP be above $1.40 on March 18?", "price": 0.47, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.772372"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.774344"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 19?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.776197"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 19?", "price": 0.063, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.778136"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 19?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.779338"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.780154"}, {"approved": false, "market_q": "Will the price of Ethereum be between $2,000 and $2,100 on March 19?", "price": 0.27, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.780896"}, {"approved": false, "market_q": "Will the price of Solana be above $130 on March 19?", "price": 0.043, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.781743"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 20?", "price": 0.14, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.782462"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.783217"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 20?", "price": 0.049, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.783987"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,300 on March 17?", "price": 0.048, "reason": "Pre-Claude gate: edge 1.0% < 6%", "timestamp": "2026-03-15T17:10:30.197985", "posterior": 0.037900874635568536, "conviction": 0, "edge": 0.010099125364431465, "signal_agreement": 1, "bayesian_prob": 0.037900874635568536}, {"approved": false, "market_q": "Will the price of Ethereum be above $1,900 on March 17?", "price": 0.964, "reason": "Pre-Claude gate: edge 2.6% < 6%", "timestamp": "2026-03-15T17:10:31.308931", "posterior": 0.99, "conviction": 0, "edge": 0.026000000000000023, "signal_agreement": 2, "bayesian_prob": 0.99}, {"approved": true, "market_q": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "price": 0.26, "posterior": 0.45451419883021227, "direction": "YES", "edge": 0.1945, "stake": 8.0, "ev": 5.9451, "conviction": 45, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.19 vs 0.26)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.4545, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.97, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.19070376528534438, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.042020699561510416, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.3566, "kelly_half": 0.1783, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:32.023252"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "price": 0.67, "posterior": 0.8827578551591637, "direction": "YES", "edge": 0.2128, "stake": 8.0, "ev": 2.5004, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.68 vs 0.67)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.8828, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71557.09, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.680444083591029, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.03799763237996728, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 1.8147, "kelly_half": 0.9073, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:00.293507"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "price": 0.21, "posterior": 0.2993808552445522, "direction": "YES", "edge": 0.0894, "stake": 7.02, "ev": 2.9528, "conviction": 35, "bet_grade": "C", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.11 vs 0.21)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.2994, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.27, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.10781621774707362, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.04104290052149762, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.1276, "kelly_half": 0.0638, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 7.02}, "final_stake": 7.02, "timestamp": "2026-03-15T17:11:03.352539"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "price": 0.9, "posterior": 0.97, "direction": "YES", "edge": 0.07, "stake": 8.0, "ev": 0.5822, "conviction": 48, "bet_grade": "B", "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "key_signal": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.9876, "bayes_updates": 4, "claude_agrees": false, "model_used": "claude-opus-4-6", "binance_price": 71549.82, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.9573750187633717, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.027840740899156426, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.3333, "kelly_half": 1.1667, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:04.891477"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "price": 0.83, "posterior": 0.9562717971088787, "direction": "YES", "edge": 0.1263, "stake": 8.0, "ev": 1.1771, "conviction": 39, "bet_grade": "C", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.86 vs 0.83)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.9563, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71547.45, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.8608122603457886, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.02452917609223377, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.8877, "kelly_half": 1.4438, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:12.003584"}, {"approved": true, "market_q": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "price": 0.09, "posterior": 0.7795414462081129, "direction": "YES", "edge": 0.6895, "stake": 8.0, "ev": 61.2526, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 11, "signal_breakdown": ["\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.7795, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71540.81, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": null, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.015250037006854539, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 3.1278, "kelly_half": 1.5639, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:15.509702"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "price": 0.82, "posterior": 0.97, "direction": "YES", "edge": 0.15, "stake": 8.0, "ev": 1.4234, "conviction": 49, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.972, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71540.82, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.907443382099939, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.015264012909011672, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 5.0, "kelly_half": 2.5, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:25.086053"}];
+const DECISIONS = [{"approved": false, "market_q": "Will Bitcoin reach $74,000 March 9-15?", "price": 0.06, "reason": "Pre-Claude gate: only 3/12 signals agree", "timestamp": "2026-03-15T17:08:49.647196", "posterior": 0.17734936589426636, "conviction": 0, "edge": 0.11734936589426637, "signal_agreement": 3, "bayesian_prob": 0.17734936589426636}, {"approved": false, "market_q": "Will the price of XRP be between $1.50 and $1.60 on March 17?", "price": 0.07, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:03.472435", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.6053246753246753, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of XRP be above $1.50 on March 16?", "price": 0.08, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:03.704084", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.5953246753246754, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of XRP be between $1.50 and $1.60 on March 18?", "price": 0.09, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:04.210057", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.5853246753246754, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of XRP be between $1.50 and $1.60 on March 16?", "price": 0.048, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:04.585399", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.6273246753246753, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,000 on March 16?", "price": 0.9, "reason": "Pre-Claude gate: only 3/12 signals agree", "timestamp": "2026-03-15T17:09:05.209001", "posterior": 0.9802596581498105, "conviction": 0, "edge": 0.08025965814981051, "signal_agreement": 3, "bayesian_prob": 0.9802596581498105}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,200 on March 16?", "price": 0.1, "reason": "Pre-Claude gate: only 3/12 signals agree", "timestamp": "2026-03-15T17:09:05.271933", "posterior": 0.23343091200779825, "conviction": 0, "edge": 0.13343091200779825, "signal_agreement": 3, "bayesian_prob": 0.23343091200779825}, {"approved": false, "market_q": "Will the price of Bitcoin be above $76,000 on March 17?", "price": 0.06, "reason": "Pre-Claude gate: edge 1.5% < 6%", "timestamp": "2026-03-15T17:09:18.811483", "posterior": 0.044922055329075554, "conviction": 0, "edge": 0.015077944670924444, "signal_agreement": 2, "bayesian_prob": 0.044922055329075554}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 17?", "price": 0.967, "reason": "Pre-Claude gate: edge 2.3% < 6%", "timestamp": "2026-03-15T17:09:19.408697", "posterior": 0.99, "conviction": 0, "edge": 0.02300000000000002, "signal_agreement": 4, "bayesian_prob": 0.99}, {"approved": false, "market_q": "Will Solana dip to $80 March 9-15?", "price": 0.023, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:33.430982", "posterior": 0.7222222222222222, "conviction": 0, "edge": 0.6992222222222222, "signal_agreement": 3, "bayesian_prob": 0.7222222222222222}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,400 on March 17?", "price": 0.036, "reason": "Pre-Claude gate: edge 0.2% < 6%", "timestamp": "2026-03-15T17:09:35.253720", "posterior": 0.037900874635568536, "conviction": 0, "edge": 0.001900874635568539, "signal_agreement": 3, "bayesian_prob": 0.037900874635568536}, {"approved": true, "market_q": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "price": 0.46, "posterior": 0.6784155045280025, "direction": "YES", "edge": 0.2184, "stake": 8.0, "ev": 3.7585, "conviction": 46, "bet_grade": "B", "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "key_signal": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.44 vs 0.46)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.815)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.7335, "bayes_updates": 4, "claude_agrees": false, "model_used": "claude-opus-4-6", "binance_price": 71568.33, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": null, "okx": null, "bybit": null}, "avg": 0, "consensus": false, "exchanges_reporting": 0}, "ob_imbalance": -0.8152152969919307, "fear_greed": 15, "math_prob": 0.43762786360292594, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": 0.0, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "UNKNOWN", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.6792, "kelly_half": 0.3396, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:09:35.969513"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "price": 0.72, "posterior": 0.9004609741558446, "direction": "YES", "edge": 0.1805, "stake": 8.0, "ev": 1.9651, "conviction": 66, "bet_grade": "B+", "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "key_signal": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.9307, "bayes_updates": 4, "claude_agrees": false, "model_used": "claude-opus-4-6", "binance_price": 71555.79, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.7914772878751869, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.036181558473464444, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 1.813, "kelly_half": 0.9065, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:09:45.243284"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $80,000 on March 17?", "price": 0.022, "reason": "Pre-Claude gate: edge 1.2% < 6%", "timestamp": "2026-03-15T17:09:50.454328", "posterior": 0.03448544901302958, "conviction": 0, "edge": 0.01248544901302958, "signal_agreement": 4, "bayesian_prob": 0.03448544901302958}, {"approved": false, "market_q": "Will the price of Bitcoin be above $62,000 on March 19?", "price": 0.977, "reason": "Pre-Claude gate: edge 1.3% < 6%", "timestamp": "2026-03-15T17:09:51.891431", "posterior": 0.99, "conviction": 0, "edge": 0.013000000000000012, "signal_agreement": 4, "bayesian_prob": 0.99}, {"approved": false, "market_q": "Will the price of Bitcoin be between $70,000 and $72,000 on March 16?", "price": 0.38, "reason": "Claude SKIP (HIGH confidence)", "timestamp": "2026-03-15T17:09:53.140778", "posterior": 0.665679012345679, "conviction": 66, "edge": 0.28567901234567905, "signal_agreement": 4, "reasoning": "The Bayesian model has a critical methodological flaw: it applied directional bullish likelihood ratios (F&G contrarian buy LR=2.0, CVD divergence UP LR=1.70) to a RANGE bet, not a directional bet. Bullish pressure that pushes BTC above $72,000 resolves this NO \u2014 so those signals actively hurt the trade. A simple log-normal model using 0.53%/h vol (~2.6% daily \u03c3 \u2248 $1,860) with BTC at $71,555 gives P(in $70k\u2013$72k at T+24h) \u2248 39% [z_upper=+0.24, z_lower=-0.84], almost exactly the market price. The model's 78% is a severe overestimate driven by range/directional category confusion.", "bayesian_prob": 0.7795414462081129, "bayes_updates": 4}, {"approved": false, "market_q": "Will the price of XRP be between $1.40 and $1.50 on March 17?", "price": 0.38, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:09:59.132359", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.2953246753246753, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 21?", "price": 0.88, "reason": "Pre-Claude gate: edge 0.0% < 6%", "timestamp": "2026-03-15T17:10:00.565956", "posterior": 0.8803049197821278, "conviction": 0, "edge": 0.00030491978212776605, "signal_agreement": 4, "bayesian_prob": 0.8803049197821278}, {"approved": false, "market_q": "Will the price of XRP be between $1.40 and $1.50 on March 18?", "price": 0.31, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:10:03.555795", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.36532467532467533, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": true, "market_q": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "price": 0.29, "posterior": 0.5234581349043829, "direction": "YES", "edge": 0.2335, "stake": 8.0, "ev": 6.4002, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.24 vs 0.29)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.5235, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71555.79, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.23701866626778367, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.036181558473464444, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.4899, "kelly_half": 0.245, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:05.118102"}, {"approved": false, "market_q": "Will the price of XRP be between $1.40 and $1.50 on March 16?", "price": 0.67, "reason": "Pre-Claude gate: edge 3.1% < 6%", "timestamp": "2026-03-15T17:10:06.470228", "posterior": 0.7005988023952097, "conviction": 0, "edge": 0.030598802395209623, "signal_agreement": 3, "bayesian_prob": 0.7005988023952097}, {"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 18?", "price": 0.962, "reason": "Pre-Claude gate: edge 2.8% < 6%", "timestamp": "2026-03-15T17:10:08.538391", "posterior": 0.99, "conviction": 0, "edge": 0.028000000000000025, "signal_agreement": 4, "bayesian_prob": 0.99}, {"approved": false, "market_q": "Will the price of Solana be above $90 on March 16?", "price": 0.29, "reason": "Pre-Claude gate: only 2/11 signals agree", "timestamp": "2026-03-15T17:10:08.565143", "posterior": 0.7222222222222222, "conviction": 0, "edge": 0.43222222222222223, "signal_agreement": 2, "bayesian_prob": 0.7222222222222222}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 18?", "price": 0.93, "reason": "Pre-Claude gate: edge 6.0% < 6%", "timestamp": "2026-03-15T17:10:12.348821", "posterior": 0.99, "conviction": 0, "edge": 0.05999999999999994, "signal_agreement": 5, "bayesian_prob": 0.99}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 16?", "price": 0.18, "reason": "Claude SKIP (HIGH confidence)", "timestamp": "2026-03-15T17:10:12.677066", "posterior": 0.5846790123456791, "conviction": 66, "edge": 0.4046790123456791, "signal_agreement": 4, "reasoning": "Critical model failure: BTC is currently trading at $71,559 \u2014 roughly $1,560 ABOVE the upper bound of the target range ($68k\u2013$70k). For YES to resolve, BTC must DROP 2.2%\u20135.0% within 24h. The Bayesian model applied bullish likelihood ratios (CVD divergence up, F&G contrarian buy, multi-TF TA bullish) which, if correct, push price HIGHER and make YES resolution LESS likely \u2014 not more. The model has a directional inversion error: it is treating this as a 'will BTC go up' question when YES actually requires bearish price action.", "bayesian_prob": 0.7795414462081129, "bayes_updates": 4}, {"approved": false, "market_q": "Will the price of XRP be above $1.50 on March 19?", "price": 0.28, "reason": "Pre-Claude gate: only 3/11 signals agree", "timestamp": "2026-03-15T17:10:15.814542", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.3953246753246753, "signal_agreement": 3, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of Bitcoin be above $78,000 on March 17?", "price": 0.021, "reason": "Pre-Claude gate: edge 1.3% < 6%", "timestamp": "2026-03-15T17:10:19.546492", "posterior": 0.03448544901302958, "conviction": 0, "edge": 0.013485449013029577, "signal_agreement": 4, "bayesian_prob": 0.03448544901302958}, {"approved": true, "market_q": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "price": 0.29, "posterior": 0.7795414462081129, "direction": "YES", "edge": 0.4895, "stake": 8.0, "ev": 13.4646, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 11, "signal_breakdown": ["\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.7795, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.97, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": null, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.042020699561510416, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.2206, "kelly_half": 1.1103, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:20.578134"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "price": 0.69, "posterior": 0.8998000337148219, "direction": "YES", "edge": 0.2098, "stake": 8.0, "ev": 2.3925, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.72 vs 0.69)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.8998, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.96, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.7174826004189672, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.042006731138491724, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.0938, "kelly_half": 1.0469, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:21.446720"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 19?", "price": 0.955, "reason": "Pre-Claude gate: edge 3.5% < 6%", "timestamp": "2026-03-15T17:10:23.269824", "posterior": 0.99, "conviction": 0, "edge": 0.03500000000000003, "signal_agreement": 4, "bayesian_prob": 0.99}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,000 on March 17?", "price": 0.8, "reason": "Pre-Claude gate: only 3/12 signals agree", "timestamp": "2026-03-15T17:10:25.522890", "posterior": 0.9795719611037722, "conviction": 0, "edge": 0.17957196110377216, "signal_agreement": 3, "bayesian_prob": 0.9795719611037722}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 20?", "price": 0.91, "reason": "Pre-Claude gate: edge 0.6% < 6%", "timestamp": "2026-03-15T17:10:26.259363", "posterior": 0.9040043933210723, "conviction": 0, "edge": 0.005995606678927734, "signal_agreement": 2, "bayesian_prob": 0.9040043933210723}, {"approved": true, "market_q": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "price": 0.9, "posterior": 0.97, "direction": "YES", "edge": 0.07, "stake": 8.0, "ev": 0.5822, "conviction": 56, "bet_grade": "B+", "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "key_signal": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.99, "bayes_updates": 4, "claude_agrees": false, "model_used": "claude-opus-4-6", "binance_price": 71557.09, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.9701109094627074, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.03799763237996728, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.3333, "kelly_half": 1.1667, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:26.920232"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $80,000 on March 18?", "price": 0.023, "reason": "Pre-Claude gate: edge 1.1% < 6%", "timestamp": "2026-03-15T17:10:29.753231", "posterior": 0.03448544901302958, "conviction": 0, "edge": 0.01148544901302958, "signal_agreement": 4, "bayesian_prob": 0.03448544901302958}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 17?", "price": 0.03, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.756000"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 17?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.758299"}, {"approved": false, "market_q": "Will the price of Ethereum be between $2,100 and $2,200 on March 17?", "price": 0.26, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.761813"}, {"approved": false, "market_q": "Will the price of Solana be above $80 on March 17?", "price": 0.93, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.765028"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,400 on March 18?", "price": 0.05, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.767769"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 18?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.770000"}, {"approved": false, "market_q": "Will the price of XRP be above $1.40 on March 18?", "price": 0.47, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.772372"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.774344"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 19?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.776197"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 19?", "price": 0.063, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.778136"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 19?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.779338"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.780154"}, {"approved": false, "market_q": "Will the price of Ethereum be between $2,000 and $2,100 on March 19?", "price": 0.27, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.780896"}, {"approved": false, "market_q": "Will the price of Solana be above $130 on March 19?", "price": 0.043, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.781743"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 20?", "price": 0.14, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.782462"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.783217"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 20?", "price": 0.049, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:10:29.783987"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,300 on March 17?", "price": 0.048, "reason": "Pre-Claude gate: edge 1.0% < 6%", "timestamp": "2026-03-15T17:10:30.197985", "posterior": 0.037900874635568536, "conviction": 0, "edge": 0.010099125364431465, "signal_agreement": 1, "bayesian_prob": 0.037900874635568536}, {"approved": false, "market_q": "Will the price of Ethereum be above $1,900 on March 17?", "price": 0.964, "reason": "Pre-Claude gate: edge 2.6% < 6%", "timestamp": "2026-03-15T17:10:31.308931", "posterior": 0.99, "conviction": 0, "edge": 0.026000000000000023, "signal_agreement": 2, "bayesian_prob": 0.99}, {"approved": true, "market_q": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "price": 0.26, "posterior": 0.45451419883021227, "direction": "YES", "edge": 0.1945, "stake": 8.0, "ev": 5.9451, "conviction": 45, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.19 vs 0.26)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.4545, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.97, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.19070376528534438, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.042020699561510416, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.3566, "kelly_half": 0.1783, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:10:32.023252"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "price": 0.67, "posterior": 0.8827578551591637, "direction": "YES", "edge": 0.2128, "stake": 8.0, "ev": 2.5004, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.68 vs 0.67)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.8828, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71557.09, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.680444083591029, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.03799763237996728, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 1.8147, "kelly_half": 0.9073, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:00.293507"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "price": 0.21, "posterior": 0.2993808552445522, "direction": "YES", "edge": 0.0894, "stake": 7.02, "ev": 2.9528, "conviction": 35, "bet_grade": "C", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.11 vs 0.21)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.2994, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71559.27, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.10781621774707362, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.04104290052149762, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 0.1276, "kelly_half": 0.0638, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 7.02}, "final_stake": 7.02, "timestamp": "2026-03-15T17:11:03.352539"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "price": 0.9, "posterior": 0.97, "direction": "YES", "edge": 0.07, "stake": 8.0, "ev": 0.5822, "conviction": 48, "bet_grade": "B", "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "key_signal": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.9876, "bayes_updates": 4, "claude_agrees": false, "model_used": "claude-opus-4-6", "binance_price": 71549.82, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.9573750187633717, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.027840740899156426, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.3333, "kelly_half": 1.1667, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:04.891477"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "price": 0.83, "posterior": 0.9562717971088787, "direction": "YES", "edge": 0.1263, "stake": 8.0, "ev": 1.1771, "conviction": 39, "bet_grade": "C", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 12, "signal_breakdown": ["\u274c Math: no edge (0.86 vs 0.83)", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.9563, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71547.45, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.8608122603457886, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.02452917609223377, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 2.8877, "kelly_half": 1.4438, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:12.003584"}, {"approved": true, "market_q": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "price": 0.09, "posterior": 0.7795414462081129, "direction": "YES", "edge": 0.6895, "stake": 8.0, "ev": 61.2526, "conviction": 51, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 4, "signal_total": 11, "signal_breakdown": ["\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.7795, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71540.81, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": null, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.015250037006854539, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 3.1278, "kelly_half": 1.5639, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:15.509702"}, {"approved": true, "market_q": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "price": 0.82, "posterior": 0.97, "direction": "YES", "edge": 0.15, "stake": 8.0, "ev": 1.4234, "conviction": 49, "bet_grade": "B", "confidence": "LOW", "reasoning": "", "key_signal": "", "signal_agreement": 5, "signal_total": 12, "signal_breakdown": ["\u2705 Math: underpriced YES", "\u2796 Funding: neutral", "\u2796 OI: UNKNOWN", "\u2705 CVD: DIVERGENCE UP", "\u2796 OrderBook: neutral (-0.814)", "\u2705 F&G: extreme fear 15 \u2192 contrarian buy", "\u2796 S/R: NEUTRAL", "\u2796 Basis: NEUTRAL", "\u2796 Options: NEUTRAL", "\u2796 News: NEUTRAL", "\u2705 Leverage: normal (stable market)", "\u2705 TA: multi-timeframe bullish"], "bayesian_prob": 0.972, "bayes_updates": 4, "claude_agrees": true, "model_used": "claude-opus-4-6", "binance_price": 71540.82, "funding_rate": 2.86e-05, "multi_exchange_funding": {"rates": {"binance": 2.86e-05, "okx": -3.8951368755e-06, "bybit": 5.539e-05}, "avg": 2.7e-05, "consensus": false, "exchanges_reporting": 3}, "ob_imbalance": -0.8143292439238834, "fear_greed": 15, "math_prob": 0.907443382099939, "hourly_vol": 0.005340961978835506, "deribit_iv": 0.00581085382995, "vol_regime": "LOW", "vol_percentile": 0.0, "oi_change_1h": 0, "oi_change_24h": 0, "oi_bias": "UNKNOWN", "long_short_ratio": 1.0, "liq_pressure": "NEUTRAL", "cvd_signal": "DIVERGENCE", "cvd_direction": "UP", "nearest_support": 70852.65, "nearest_resistance": 72284.01, "sr_bias": "NEUTRAL", "risk_appetite": "NEUTRAL", "perp_premium": -0.015264012909011672, "leverage_regime": "NORMAL", "dominance_trend": "NEUTRAL", "basis_signal": "NEUTRAL", "options_sentiment": "NEUTRAL", "put_call_ratio": 0.542, "news_sentiment": "NEUTRAL", "news_score": 0, "market_quality": "GOOD", "whale_signal": "NEUTRAL", "coingecko_sentiment": "BULLISH", "google_trends": "UNAVAILABLE", "session": "US_OPEN", "kelly_info": {"kelly_full": 5.0, "kelly_half": 2.5, "vol_scale": 1.1, "time_scale": 1.0, "final_stake": 8.0}, "final_stake": 8.0, "timestamp": "2026-03-15T17:11:25.086053"}];
 </script>
 
-<div class="max-w-[1440px] mx-auto px-4 md:px-8 py-6 md:py-10">
+<div class="app">
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       HEADER
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <header class="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4 animate-in" style="animation-delay: 0s">
-    <div>
-      <div class="flex items-baseline gap-3 md:gap-5">
-        <h1 class="font-display text-[36px] md:text-[52px] font-black tracking-[-0.02em] leading-none" style="color: var(--text-primary)">POLYFARM</h1>
-        <span class="section-label" style="position: relative; top: -4px;">Predictive Intelligence</span>
-      </div>
-      <p class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="live-timestamp"></p>
-    </div>
-    <div id="pl-badge"></div>
-  </header>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       STAT CARDS
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-[1px]" style="background: var(--border); margin-bottom: 1px;">
-    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.06s">
-      <div class="section-label mb-4">Portfolio Value</div>
-      <div class="font-display text-[24px] md:text-[32px] font-bold leading-none tracking-tight" id="stat-portfolio">—</div>
-      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-portfolio-sub"></div>
-    </div>
-    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.10s">
-      <div class="section-label mb-4">Cash Available</div>
-      <div class="font-display text-[24px] md:text-[32px] font-bold leading-none tracking-tight" id="stat-cash">—</div>
-      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-cash-sub"></div>
-    </div>
-    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.14s">
-      <div class="section-label mb-4">Open Positions</div>
-      <div class="font-display text-[24px] md:text-[32px] font-bold leading-none tracking-tight" id="stat-open">—</div>
-      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-open-sub"></div>
-    </div>
-    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.18s">
-      <div class="section-label mb-4">Win Rate</div>
-      <div class="font-display text-[24px] md:text-[32px] font-bold leading-none tracking-tight" id="stat-winrate">—</div>
-      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-winrate-sub"></div>
-    </div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">POLY<span>FARM</span></div>
+    <div class="badge-live"><div class="dot-live"></div>LIVE</div>
   </div>
-
-  <div style="height: 32px;"></div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       EQUITY CHART + MAP
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-    <!-- Equity Chart: 3 cols -->
-    <div class="md:col-span-3 panel p-4 md:p-6 animate-in" style="animation-delay: 0.24s">
-      <div class="section-label mb-5">Equity Curve</div>
-      <div class="h-[200px] md:h-[340px]" style="position: relative;">
-        <canvas id="equityChart"></canvas>
-      </div>
-    </div>
-    <!-- Map: 2 cols -->
-    <div class="md:col-span-2 panel p-4 md:p-6 animate-in" style="animation-delay: 0.30s">
-      <div class="section-label mb-5">Market Coverage</div>
-      <div id="map" class="h-[250px] md:h-[340px]"></div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       DECISIONS LOG
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="animate-in" style="animation-delay: 0.36s">
-    <div class="flex items-center justify-between mb-4">
-      <div class="section-label">Decision Log</div>
-      <div class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="decision-count"></div>
-    </div>
-    <div class="panel overflow-hidden">
-      <!-- Header -->
-      <div class="grid grid-cols-12 gap-3 px-4 md:px-6 py-3" style="border-bottom: 1px solid var(--border);">
-        <div class="col-span-3 md:col-span-1 section-label">Verdict</div>
-        <div class="col-span-6 md:col-span-5 section-label">Market</div>
-        <div class="hidden md:block col-span-1 section-label">Price</div>
-        <div class="hidden md:block col-span-1 section-label">Edge</div>
-        <div class="col-span-3 md:col-span-2 section-label">Conviction</div>
-        <div class="hidden md:block col-span-2 section-label">Time</div>
-      </div>
-      <div id="decisions-body"></div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       BOTTOM STRIP
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="flex flex-col md:flex-row items-start md:items-center justify-between mt-8 md:mt-10 pt-5 gap-3 md:gap-0 animate-in" style="animation-delay: 0.42s; border-top: 1px solid var(--border);">
-    <div class="flex items-center gap-3">
-      <div style="width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulseDot 2.5s infinite;"></div>
-      <span class="text-[10px] tracking-wide" style="color: var(--text-secondary)">Scanner Active</span>
-    </div>
-    <div class="flex items-center gap-4 md:gap-8">
-      <span class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="last-scan"></span>
-      <span class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="total-analyzed"></span>
-    </div>
-  </div>
-
+  <div class="topbar-right" id="ts"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     SCRIPT
-     ═══════════════════════════════════════════════════════════════════════════ -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  'use strict';
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="overview">Overview</div>
+  <div class="tab" data-tab="positions">Positions <span class="tab-badge" id="badge-pos">0</span></div>
+  <div class="tab" data-tab="history">History <span class="tab-badge" id="badge-hist">0</span></div>
+  <div class="tab" data-tab="decisions">Decisions <span class="tab-badge" id="badge-dec">0</span></div>
+  <div class="tab" data-tab="system">System</div>
+</div>
 
-  // ── Helpers ────────────────────────────────────────────────────────────
-  const fmt = (n, d=2) => Number(n).toFixed(d);
-  const truncate = (s, n) => s.length > n ? s.substring(0, n) + '\u2026' : s;
+<!-- CONTENT -->
+<div class="content">
 
-  // ── Compute ────────────────────────────────────────────────────────────
-  const cash = PORTFOLIO.cash || 0;
-  const startCap = PORTFOLIO.starting_capital || 100;
-  const openBets = PORTFOLIO.open_bets || [];
-  const closedBets = PORTFOLIO.closed_bets || [];
-  const exposure = openBets.reduce((s, b) => s + (b.stake || 0), 0);
-  const portfolioValue = cash + exposure;
-  const totalPL = PORTFOLIO.total_pl || 0;
-  const wins = closedBets.filter(b => b.result === 'WON').length;
-  const losses = closedBets.filter(b => b.result === 'LOST').length;
-  const winRate = closedBets.length > 0 ? (wins / closedBets.length * 100) : 0;
-
-  // ── Number Counter Animation ───────────────────────────────────────────
-  function animateCounter(el, target, prefix='$', suffix='', decimals=2) {
-    const duration = 1400;
-    const start = performance.now();
-    function tick(now) {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 5);
-      el.textContent = prefix + fmt(target * eased, decimals) + suffix;
-      if (progress < 1) requestAnimationFrame(tick);
-      else el.textContent = prefix + fmt(target, decimals) + suffix;
-    }
-    requestAnimationFrame(tick);
-  }
-
-  // ── Timestamp ──────────────────────────────────────────────────────────
-  document.getElementById('live-timestamp').textContent = new Date().toLocaleString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  });
-
-  // ── Stat Cards ─────────────────────────────────────────────────────────
-  animateCounter(document.getElementById('stat-portfolio'), portfolioValue);
-  document.getElementById('stat-portfolio-sub').textContent = 'Starting capital: $' + fmt(startCap);
-
-  animateCounter(document.getElementById('stat-cash'), cash);
-  document.getElementById('stat-cash-sub').textContent = fmt(cash / portfolioValue * 100, 1) + '% liquid';
-
-  document.getElementById('stat-open').textContent = openBets.length;
-  document.getElementById('stat-open-sub').textContent = '$' + fmt(exposure) + ' total exposure';
-
-  animateCounter(document.getElementById('stat-winrate'), winRate, '', '%', 1);
-  document.getElementById('stat-winrate-sub').textContent = wins + 'W \u00b7 ' + losses + 'L of ' + closedBets.length + ' closed';
-
-  // ── P&L Badge ──────────────────────────────────────────────────────────
-  const plBadge = document.getElementById('pl-badge');
-  const isPos = totalPL >= 0;
-  const plSign = isPos ? '+' : '';
-  const plPct = fmt(totalPL / startCap * 100, 1);
-  plBadge.innerHTML = `
-    <div class="${isPos ? 'pl-badge-positive' : 'pl-badge-negative'} px-5 py-3" style="text-align: right;">
-      <div class="section-label mb-2">Net P&L</div>
-      <div class="font-display text-[26px] font-bold leading-none ${isPos ? 'pl-positive' : 'pl-negative'}">${plSign}$${fmt(Math.abs(totalPL))}</div>
-      <div class="text-[10px] mt-2" style="color: var(--text-muted)">${plSign}${plPct}% all time</div>
+<!-- ═══ OVERVIEW ═══ -->
+<div class="panel active" id="tab-overview">
+  <!-- KPI row -->
+  <div class="grid4" style="margin-bottom:16px">
+    <div class="card">
+      <div class="stat-label">Portfolio Value</div>
+      <div class="stat-value" id="kpi-value">—</div>
+      <div class="stat-sub" id="kpi-value-sub">—</div>
     </div>
-  `;
+    <div class="card">
+      <div class="stat-label">Net P&amp;L</div>
+      <div class="stat-value" id="kpi-pl">—</div>
+      <div class="stat-sub" id="kpi-pl-sub">—</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value" id="kpi-wr">—</div>
+      <div class="stat-sub" id="kpi-wr-sub">—</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Open / Cash</div>
+      <div class="stat-value" id="kpi-open">—</div>
+      <div class="stat-sub" id="kpi-open-sub">—</div>
+    </div>
+  </div>
 
-  // ── Equity Chart ───────────────────────────────────────────────────────
-  const labels = ['Start'];
-  const values = [startCap];
-  let running = startCap;
-  const sorted = [...closedBets].sort((a, b) =>
-    (a.resolved_at || a.placed_at || '').localeCompare(b.resolved_at || b.placed_at || '')
-  );
-  sorted.forEach(bet => {
-    running = +(running + (bet.pl || 0)).toFixed(2);
-    const ts = bet.resolved_at || bet.placed_at || '';
-    let label = '?';
-    try { label = new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
-    catch(e) { label = ts.substring(0, 10); }
-    labels.push(label);
-    values.push(running);
+  <!-- Chart row -->
+  <div class="grid2" style="margin-bottom:16px">
+    <div class="card chart-wrap" style="height:260px">
+      <div class="section-hdr"><div class="section-title">Equity Curve</div></div>
+      <canvas id="equityChart" style="height:200px"></canvas>
+    </div>
+    <div class="card chart-wrap" style="height:260px">
+      <div class="section-hdr"><div class="section-title">P&amp;L per Bet</div></div>
+      <canvas id="plChart" style="height:200px"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="card">
+    <div class="section-hdr">
+      <div class="section-title">Recent Activity</div>
+      <div class="section-sub" id="last-scan-lbl"></div>
+    </div>
+    <div id="recent-activity"></div>
+  </div>
+</div>
+
+<!-- ═══ POSITIONS ═══ -->
+<div class="panel" id="tab-positions">
+  <div class="section-hdr" style="margin-bottom:14px">
+    <div class="section-title">Open Positions</div>
+    <div class="section-sub" id="pos-cash-lbl"></div>
+  </div>
+  <div id="positions-body"></div>
+</div>
+
+<!-- ═══ HISTORY ═══ -->
+<div class="panel" id="tab-history">
+  <div class="section-hdr" style="margin-bottom:14px">
+    <div class="section-title">Closed Bets</div>
+    <div class="section-sub" id="hist-summary"></div>
+  </div>
+  <div class="card" style="overflow:hidden;padding:0">
+    <table class="tbl" id="hist-table">
+      <thead>
+        <tr>
+          <th>Market</th>
+          <th>Position</th>
+          <th>Stake</th>
+          <th>Payout</th>
+          <th>P&amp;L</th>
+          <th>Edge</th>
+          <th>Confidence</th>
+          <th>Result</th>
+          <th>Closed</th>
+        </tr>
+      </thead>
+      <tbody id="hist-body"></tbody>
+    </table>
+    <div class="empty" id="hist-empty" style="display:none">
+      <div class="empty-icon">📭</div>
+      <div class="empty-text">No closed bets yet</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DECISIONS ═══ -->
+<div class="panel" id="tab-decisions">
+  <div class="section-hdr" style="margin-bottom:14px">
+    <div class="section-title">Scanner Decisions</div>
+    <div class="section-sub" id="dec-stats"></div>
+  </div>
+  <!-- Filter bar -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" data-filter="approved" onclick="setFilter('approved',this)">Bets Only</button>
+    <button class="filter-btn" data-filter="rejected" onclick="setFilter('rejected',this)">Skips Only</button>
+  </div>
+  <div id="decisions-list"></div>
+</div>
+
+<!-- ═══ SYSTEM ═══ -->
+<div class="panel" id="tab-system">
+  <div class="grid2">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="section-hdr"><div class="section-title">Scanner Config</div></div>
+        <div id="sys-config"></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr"><div class="section-title">Portfolio State</div></div>
+        <div id="sys-portfolio"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="section-hdr"><div class="section-title">Edge Distribution</div></div>
+        <canvas id="edgeChart" style="height:160px"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-hdr"><div class="section-title">Signal Breakdown</div></div>
+        <div id="sys-signals"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<style>
+.filter-btn { background:var(--bg2); border:1px solid var(--border); color:var(--text2); font-size:11px; font-family:var(--sans); padding:5px 12px; border-radius:4px; cursor:pointer; transition:all 0.15s; }
+.filter-btn:hover { border-color:var(--border2); color:var(--text); }
+.filter-btn.active { background:var(--blue-dim); border-color:rgba(88,166,255,0.3); color:var(--blue); }
+</style>
+
+<script>
+// ─── Helpers ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt2 = n => Number(n).toFixed(2);
+const fmt1 = n => Number(n).toFixed(1);
+const fmtPct = n => (Number(n)*100).toFixed(1)+'%';
+const trunc = (s,n) => s && s.length>n ? s.slice(0,n)+'…' : (s||'—');
+const fmtDate = s => { try { return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){return s||'—';} };
+const plClass = n => Number(n)>=0 ? 'green' : 'red';
+const plSign = n => Number(n)>=0 ? '+' : '';
+
+// ─── Data ───────────────────────────────────────────────────────────────────
+const cash = PORTFOLIO.cash || 0;
+const startCap = PORTFOLIO.starting_capital || 100;
+const openBets = PORTFOLIO.open_bets || [];
+const closedBets = PORTFOLIO.closed_bets || [];
+const totalPL = PORTFOLIO.total_pl || 0;
+const exposure = openBets.reduce((s,b)=>s+(b.stake||0),0);
+const portfolioVal = cash + exposure;
+const wins = closedBets.filter(b=>b.result==='WON').length;
+const losses = closedBets.filter(b=>b.result==='LOST').length;
+const winRate = closedBets.length>0 ? wins/closedBets.length*100 : 0;
+const avgPL = closedBets.length>0 ? closedBets.reduce((s,b)=>s+(b.pl||0),0)/closedBets.length : 0;
+const betsFromDec = DECISIONS.filter(d=>d.approved);
+
+// ─── Timestamp ──────────────────────────────────────────────────────────────
+$('ts').textContent = new Date().toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+// ─── Tab logic ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    $('tab-'+tab.dataset.tab).classList.add('active');
   });
-  labels.push('Now');
-  values.push(+(cash + exposure).toFixed(2));
-
-  const ctx = document.getElementById('equityChart').getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, 340);
-  gradient.addColorStop(0, 'rgba(45, 127, 249, 0.10)');
-  gradient.addColorStop(0.7, 'rgba(45, 127, 249, 0.02)');
-  gradient.addColorStop(1, 'rgba(45, 127, 249, 0.0)');
-
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        borderColor: '#2d7ff9',
-        borderWidth: 1.5,
-        backgroundColor: gradient,
-        fill: true,
-        tension: 0.35,
-        pointRadius: 3,
-        pointBackgroundColor: '#2d7ff9',
-        pointBorderColor: '#0a0a0f',
-        pointBorderWidth: 2,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#2d7ff9',
-        pointHoverBorderColor: '#e8e8ef',
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { intersect: false, mode: 'index' },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#16161f',
-          borderColor: 'rgba(45, 127, 249, 0.25)',
-          borderWidth: 1,
-          titleFont: { family: 'JetBrains Mono', size: 10, weight: '400' },
-          bodyFont: { family: 'Playfair Display', size: 16, weight: '700' },
-          titleColor: '#50506a',
-          bodyColor: '#e8e8ef',
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: 0,
-          displayColors: false,
-          callbacks: { label: (c) => '$' + c.parsed.y.toFixed(2) }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255,255,255,0.025)', drawBorder: false },
-          ticks: { color: '#50506a', font: { family: 'JetBrains Mono', size: 9 }, padding: 8 },
-          border: { display: false }
-        },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.025)', drawBorder: false },
-          ticks: {
-            color: '#50506a',
-            font: { family: 'JetBrains Mono', size: 9 },
-            padding: 12,
-            callback: v => '$' + v
-          },
-          border: { display: false }
-        }
-      }
-    }
-  });
-
-  // ── Map ────────────────────────────────────────────────────────────────
-  const map = L.map('map', {
-    zoomControl: false,
-    attributionControl: false,
-    scrollWheelZoom: false,
-    dragging: true,
-  }).setView([30, 0], 2);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-  }).addTo(map);
-
-  function marketGeo(q) {
-    q = q.toLowerCase();
-    if (/bitcoin|btc|ethereum|eth|crypto|defi|token|solana|xrp/.test(q)) return [40.71, -74.01, 'New York'];
-    if (/president|senate|congress|us election|white house|trump|biden/.test(q)) return [38.90, -77.04, 'Washington D.C.'];
-    if (/uk|britain|england|premier league/.test(q)) return [51.51, -0.13, 'London'];
-    if (/euro|european union|eu |ecb/.test(q)) return [50.85, 4.35, 'Brussels'];
-    if (/france|french|paris/.test(q)) return [48.86, 2.35, 'Paris'];
-    if (/germany|german|berlin/.test(q)) return [52.52, 13.41, 'Berlin'];
-    if (/china|chinese|beijing|taiwan/.test(q)) return [39.90, 116.41, 'Beijing'];
-    if (/japan|tokyo|nikkei/.test(q)) return [35.68, 139.69, 'Tokyo'];
-    if (/israel|gaza|iran|saudi|middle east/.test(q)) return [31.77, 35.21, 'Jerusalem'];
-    if (/russia|ukraine|putin|moscow/.test(q)) return [55.76, 37.62, 'Moscow'];
-    return [20.0, 0.0, 'Global'];
-  }
-
-  const allMarkets = [...openBets, ...closedBets];
-  const seenGeo = new Set();
-
-  allMarkets.forEach(bet => {
-    const [lat, lng, label] = marketGeo(bet.market || '');
-    const key = lat + ',' + lng;
-    if (seenGeo.has(key)) return;
-    seenGeo.add(key);
-    const isOpen = bet.status === 'OPEN';
-
-    // Outer glow ring for open positions
-    if (isOpen) {
-      L.circleMarker([lat, lng], {
-        radius: 14,
-        fillColor: 'transparent',
-        color: '#2d7ff9',
-        weight: 1,
-        opacity: 0.2,
-      }).addTo(map);
-    }
-
-    L.circleMarker([lat, lng], {
-      radius: isOpen ? 5 : 3,
-      fillColor: isOpen ? '#2d7ff9' : '#50506a',
-      fillOpacity: isOpen ? 0.9 : 0.5,
-      color: isOpen ? '#2d7ff9' : '#50506a',
-      weight: 1,
-      opacity: isOpen ? 0.7 : 0.3,
-    }).addTo(map).bindPopup(
-      '<div style="font-family:JetBrains Mono;font-size:10px;color:#e8e8ef;background:#16161f;padding:10px 12px;border:1px solid rgba(45,127,249,0.15);max-width:240px;line-height:1.5;">' +
-      '<strong style="color:#2d7ff9;letter-spacing:1px;font-size:9px;">' + label.toUpperCase() + '</strong><br/>' +
-      '<span style="color:#8888a0">' + truncate(bet.market || '', 55) + '</span></div>'
-    );
-  });
-
-  // Also add markers from decisions
-  DECISIONS.forEach(d => {
-    const q = d.market_q || d.question || '';
-    const [lat, lng, label] = marketGeo(q);
-    const key = lat + ',' + lng;
-    if (seenGeo.has(key)) return;
-    seenGeo.add(key);
-    L.circleMarker([lat, lng], {
-      radius: 2,
-      fillColor: '#50506a',
-      fillOpacity: 0.3,
-      color: '#50506a',
-      weight: 0.5,
-      opacity: 0.2,
-    }).addTo(map);
-  });
-
-  // ── Decision Log ───────────────────────────────────────────────────────
-  const tbody = document.getElementById('decisions-body');
-  const sortedDec = [...DECISIONS].reverse();
-
-  sortedDec.forEach((d, i) => {
-    const approved = d.approved;
-    const verdict = approved ? 'BUY' : 'SKIP';
-    const vClass = approved ? 'verdict-buy' : 'verdict-skip';
-    const question = truncate(d.market_q || d.question || '\u2014', 60);
-    const price = d.price != null ? '$' + fmt(d.price, 3) : '\u2014';
-    const edge = d.edge != null ? (d.edge * 100).toFixed(1) + '%' : '\u2014';
-    const conviction = d.conviction != null ? d.conviction : (d.conviction_score || 0);
-    const convPct = Math.min(Math.max(conviction * 10, 0), 100);
-
-    let timeLabel = '\u2014';
-    try {
-      const dt = new Date(d.timestamp);
-      timeLabel = dt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch(e) {}
-
-    const convColor = approved ? 'var(--electric)' : 'rgba(80, 80, 106, 0.5)';
-
-    const row = document.createElement('div');
-    row.className = 'decision-row grid grid-cols-12 gap-3 px-4 md:px-6 py-3 items-center animate-in';
-    row.style.animationDelay = (0.4 + i * 0.025) + 's';
-    row.innerHTML =
-      '<div class="col-span-3 md:col-span-1">' +
-        '<span class="' + vClass + ' pl-2 py-0.5 text-[9px] font-semibold tracking-[3px]">' + verdict + '</span>' +
-      '</div>' +
-      '<div class="col-span-6 md:col-span-5 text-[11px] truncate" style="color: var(--text-secondary)">' + question + '</div>' +
-      '<div class="hidden md:block col-span-1 font-display text-[13px]" style="color: var(--text-primary)">' + price + '</div>' +
-      '<div class="hidden md:block col-span-1 text-[11px]" style="color: ' + (d.edge > 0 ? 'var(--electric)' : 'var(--text-muted)') + '">' + edge + '</div>' +
-      '<div class="col-span-3 md:col-span-2">' +
-        '<div class="conviction-bar-bg"><div class="conviction-fill" style="width:' + convPct + '%;background:' + convColor + ';"></div></div>' +
-      '</div>' +
-      '<div class="hidden md:block col-span-2 text-[10px]" style="color: var(--text-muted)">' + timeLabel + '</div>';
-    tbody.appendChild(row);
-  });
-
-  document.getElementById('decision-count').textContent = DECISIONS.length + ' decisions analyzed';
-
-  // ── Bottom Strip ───────────────────────────────────────────────────────
-  const lastDec = DECISIONS.length > 0 ? DECISIONS[DECISIONS.length - 1] : null;
-  if (lastDec && lastDec.timestamp) {
-    try {
-      const d = new Date(lastDec.timestamp);
-      document.getElementById('last-scan').textContent = 'Last scan: ' + d.toLocaleString('en-US', {
-        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
-    } catch(e) {}
-  }
-  document.getElementById('total-analyzed').textContent = DECISIONS.length + ' markets scanned';
-
 });
+
+// ─── Badges ─────────────────────────────────────────────────────────────────
+$('badge-pos').textContent = openBets.length;
+$('badge-hist').textContent = closedBets.length;
+$('badge-dec').textContent = DECISIONS.length;
+
+// ═══════════════════════════════════════════════════════
+// TAB 1: OVERVIEW
+// ═══════════════════════════════════════════════════════
+const plPct = ((portfolioVal - startCap)/startCap*100);
+$('kpi-value').innerHTML = `<span class="${plClass(portfolioVal-startCap)}">€${fmt2(portfolioVal)}</span>`;
+$('kpi-value-sub').textContent = `Start: €${fmt2(startCap)} · Exposure: €${fmt2(exposure)}`;
+$('kpi-pl').innerHTML = `<span class="${plClass(totalPL)}">${plSign(totalPL)}€${fmt2(Math.abs(totalPL))}</span>`;
+$('kpi-pl-sub').textContent = `${plSign(plPct)}${fmt1(plPct)}% all-time · avg ${plSign(avgPL)}€${fmt2(Math.abs(avgPL))}/bet`;
+$('kpi-wr').innerHTML = `<span>${fmt1(winRate)}%</span>`;
+$('kpi-wr-sub').textContent = `${wins}W · ${losses}L of ${closedBets.length} closed`;
+$('kpi-open').innerHTML = `<b>${openBets.length}</b> open`;
+$('kpi-open-sub').textContent = `€${fmt2(cash)} cash available`;
+
+// Equity chart
+(function(){
+  const labels = ['Start'], vals = [startCap];
+  let run = startCap;
+  [...closedBets].sort((a,b)=>(a.resolved_at||a.placed_at||'').localeCompare(b.resolved_at||b.placed_at||'')).forEach(b=>{
+    run = +(run+(b.pl||0)).toFixed(2);
+    labels.push(fmtDate(b.resolved_at||b.placed_at));
+    vals.push(run);
+  });
+  labels.push('Now'); vals.push(+portfolioVal.toFixed(2));
+  const ctx = $('equityChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(88,166,255,0.12)');
+  grad.addColorStop(1,'rgba(88,166,255,0)');
+  new Chart(ctx,{
+    type:'line',
+    data:{ labels, datasets:[{ data:vals, borderColor:'#58a6ff', borderWidth:1.5, backgroundColor:grad, fill:true, tension:0.3, pointRadius:3, pointBackgroundColor:'#58a6ff', pointBorderColor:'#0d1117', pointBorderWidth:1.5, pointHoverRadius:5 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>'€'+c.parsed.y.toFixed(2) }, titleFont:{family:'JetBrains Mono',size:10}, bodyFont:{family:'JetBrains Mono',size:13}, padding:10, cornerRadius:4, displayColors:false }},
+      scales:{ x:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:6}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:8,callback:v=>'€'+v}, border:{display:false} } }
+    }
+  });
+})();
+
+// P&L bar chart
+(function(){
+  if(!closedBets.length){ $('plChart').parentElement.innerHTML='<div class="section-hdr"><div class="section-title">P&L per Bet</div></div><div class="empty" style="padding-top:60px"><div class="empty-icon">📊</div><div class="empty-text">No closed bets yet</div></div>'; return; }
+  const labels = closedBets.map(b=>trunc(b.market||'',18));
+  const vals = closedBets.map(b=>b.pl||0);
+  const colors = vals.map(v=>v>=0?'rgba(63,185,80,0.7)':'rgba(248,81,73,0.7)');
+  const ctx = $('plChart').getContext('2d');
+  new Chart(ctx,{
+    type:'bar',
+    data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderRadius:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(2)+'€' }, titleFont:{family:'JetBrains Mono',size:9}, bodyFont:{family:'JetBrains Mono',size:13}, padding:10, cornerRadius:4, displayColors:false }},
+      scales:{ x:{ grid:{display:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:4,maxRotation:30}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:8,callback:v=>'€'+v}, border:{display:false} } }
+    }
+  });
+})();
+
+// Recent activity
+(function(){
+  const all = [...openBets.map(b=>({...b,_type:'open'})), ...closedBets.map(b=>({...b,_type:'closed'})), ...DECISIONS.slice(-10).map(d=>({...d,_type:'decision'}))];
+  all.sort((a,b)=>((b.placed_at||b.timestamp||'') > (a.placed_at||a.timestamp||'') ? 1 : -1));
+  const el = $('recent-activity');
+  if(!all.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No activity yet — scanner is running</div></div>'; return; }
+  el.innerHTML = all.slice(0,8).map(item => {
+    if(item._type==='open') return `<div class="sys-row"><span class="muted">${trunc(item.market||'',55)}</span><span class="pill pill-open">OPEN · €${item.stake}</span></div>`;
+    if(item._type==='closed') { const p=item.pl||0; return `<div class="sys-row"><span class="muted">${trunc(item.market||'',55)}</span><span class="pill ${p>=0?'pill-won':'pill-lost'}">${p>=0?'WON +':'LOST '}€${Math.abs(p).toFixed(2)}</span></div>`; }
+    if(item._type==='decision') return `<div class="sys-row"><span class="dim" style="font-family:var(--mono);font-size:10px">${item.approved?'🎯 BET':'⛔ SKIP'} · ${trunc(item.market_q||item.question||'',50)}</span><span class="dim" style="font-size:10px">${fmtDate(item.timestamp)}</span></div>`;
+    return '';
+  }).join('');
+  const lastDec = DECISIONS.length>0 ? DECISIONS[DECISIONS.length-1] : null;
+  $('last-scan-lbl').textContent = lastDec ? 'Last scan: '+fmtDate(lastDec.timestamp) : 'No scans yet';
+})();
+
+// ═══════════════════════════════════════════════════════
+// TAB 2: POSITIONS
+// ═══════════════════════════════════════════════════════
+(function(){
+  $('pos-cash-lbl').textContent = `€${fmt2(cash)} cash · €${fmt2(exposure)} deployed`;
+  const el = $('positions-body');
+  if(!openBets.length){ el.innerHTML='<div class="empty"><div class="empty-icon">💤</div><div class="empty-text">No open positions — scanner is looking for edge</div></div>'; return; }
+  el.innerHTML = openBets.map(b => {
+    const now = Date.now();
+    const expiry = b.end_date ? new Date(b.end_date).getTime() : 0;
+    const hoursLeft = expiry ? ((expiry-now)/3600000).toFixed(1) : '?';
+    const estProb = b.estimated_prob||0;
+    const edge = (estProb - b.entry_price)*100;
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:500">${b.market||'—'}</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position}</span>
+            <span class="pill pill-open">OPEN</span>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">expires in ${hoursLeft}h</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono);font-size:15px;font-weight:600">€${fmt2(b.stake)}</div>
+          <div style="font-size:10px;color:var(--text3)">→ €${fmt2(b.potential_payout||0)} payout</div>
+        </div>
+      </div>
+      <div class="grid3" style="gap:8px">
+        <div class="card-sm"><div class="stat-label">Entry Price</div><div class="stat-value" style="font-size:15px">${(b.entry_price*100).toFixed(0)}¢</div></div>
+        <div class="card-sm"><div class="stat-label">Model Prob</div><div class="stat-value blue" style="font-size:15px">${(estProb*100).toFixed(0)}%</div></div>
+        <div class="card-sm"><div class="stat-label">Edge</div><div class="stat-value ${edge>=0?'green':'red'}" style="font-size:15px">${edge>=0?'+':''}${fmt1(edge)}%</div></div>
+      </div>
+      ${b.reasoning ? `<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:4px;font-size:11px;color:var(--text3);line-height:1.5">${b.reasoning.slice(0,200)}${b.reasoning.length>200?'…':''}</div>` : ''}
+    </div>`;
+  }).join('');
+})();
+
+// ═══════════════════════════════════════════════════════
+// TAB 3: HISTORY
+// ═══════════════════════════════════════════════════════
+(function(){
+  const totalReturn = closedBets.reduce((s,b)=>s+(b.pl||0),0);
+  $('hist-summary').textContent = `${closedBets.length} bets · ${wins}W ${losses}L · total ${plSign(totalReturn)}€${fmt2(Math.abs(totalReturn))}`;
+  if(!closedBets.length){ $('hist-empty').style.display='block'; $('hist-table').style.display='none'; return; }
+  const tbody = $('hist-body');
+  tbody.innerHTML = [...closedBets].reverse().map(b => {
+    const pl = b.pl||0;
+    const estProb = b.estimated_prob||0;
+    const edge = ((estProb - b.entry_price)*100);
+    return `<tr>
+      <td class="main">${trunc(b.market||'',50)}</td>
+      <td><span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position||'—'}</span></td>
+      <td>€${fmt2(b.stake||0)}</td>
+      <td>€${fmt2(b.potential_payout||0)}</td>
+      <td class="${plClass(pl)}" style="font-weight:600">${plSign(pl)}€${fmt2(Math.abs(pl))}</td>
+      <td class="${edge>=0?'green':'red'}">${edge>=0?'+':''}${fmt1(edge)}%</td>
+      <td><span style="font-size:10px;color:var(--text3)">${b.confidence||'—'}</span></td>
+      <td><span class="pill ${b.result==='WON'?'pill-won':'pill-lost'}">${b.result||'—'}</span></td>
+      <td style="color:var(--text3)">${fmtDate(b.resolved_at||b.placed_at)}</td>
+    </tr>`;
+  }).join('');
+})();
+
+// ═══════════════════════════════════════════════════════
+// TAB 4: DECISIONS
+// ═══════════════════════════════════════════════════════
+let currentFilter = 'all';
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDecisions();
+}
+function renderDecisions() {
+  const bets = DECISIONS.filter(d=>d.approved).length;
+  const skips = DECISIONS.filter(d=>!d.approved).length;
+  $('dec-stats').textContent = `${DECISIONS.length} total · ${bets} bets · ${skips} skips`;
+  const filtered = currentFilter==='all' ? DECISIONS : currentFilter==='approved' ? DECISIONS.filter(d=>d.approved) : DECISIONS.filter(d=>!d.approved);
+  const el = $('decisions-list');
+  if(!filtered.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No decisions yet</div></div>'; return; }
+  el.innerHTML = [...filtered].reverse().map((d,i) => {
+    const approved = d.approved;
+    const edge = d.edge!=null ? (d.edge*100).toFixed(1)+'%' : '—';
+    const conv = d.conviction!=null ? d.conviction : 0;
+    const posterior = d.posterior!=null ? (d.posterior*100).toFixed(0)+'%' : '—';
+    const market = (d.market_price||0)*100;
+    const bayes = d.bayes_updates||[];
+    const signals = d.signal_breakdown||{};
+
+    return `<div class="dec-card ${approved?'approved':'rejected'}" onclick="toggleDec(this)">
+      <div class="dec-hdr">
+        <span class="pill ${approved?'pill-bet':'pill-skip'}">${approved?'BET':'SKIP'}</span>
+        ${approved?`<span class="pill pill-yes">${d.direction||'YES'}</span>`:''}
+        <span style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:auto">${fmtDate(d.timestamp)}</span>
+      </div>
+      <div class="dec-question">${d.market_q||d.question||'—'}</div>
+      <div style="display:flex;gap:16px;margin-top:6px">
+        <span class="dec-meta">Market: <b style="color:var(--text2)">${market.toFixed(0)}¢</b></span>
+        <span class="dec-meta">Model: <b style="color:var(--blue)">${posterior}</b></span>
+        <span class="dec-meta">Edge: <b class="${d.edge>=0.06?'green':'red'}">${edge}</b></span>
+        <span class="dec-meta">Conviction: <b style="color:var(--text2)">${conv}/100</b></span>
+        ${d.reason?`<span class="dec-meta" style="color:var(--red)">Reason: ${trunc(d.reason,40)}</span>`:''}
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(conv*10,100)}%;background:${approved?'var(--blue)':'var(--bg3)'}"></div></div>
+      <div class="dec-body">
+        ${bayes.length ? `<div style="margin-bottom:10px"><div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Bayesian Updates</div>${bayes.map(u=>`<div class="dec-signal-row"><span class="signal-name">${u}</span></div>`).join('')}</div>`:''}
+        ${Object.keys(signals).length ? `<div><div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Signal Breakdown</div>${Object.entries(signals).map(([k,v])=>`<div class="dec-signal-row"><span class="signal-name">${k}</span><span class="signal-val ${String(v).includes('✅')?'signal-pos':String(v).includes('❌')?'signal-neg':'signal-neu'}">${v}</span></div>`).join('')}</div>`:''}
+        ${d.reasoning ? `<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:4px;font-size:11px;color:var(--text3);line-height:1.5">${d.reasoning}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+renderDecisions();
+window.toggleDec = function(el){ el.querySelector('.dec-body').classList.toggle('open'); };
+
+// ═══════════════════════════════════════════════════════
+// TAB 5: SYSTEM
+// ═══════════════════════════════════════════════════════
+(function(){
+  const config = [
+    ['Model','Claude Opus 4 (max)'],
+    ['Kelly Fraction','50% (half Kelly)'],
+    ['Min Edge','6%'],
+    ['Min Conviction','35/100'],
+    ['Max Exposure','60% of portfolio'],
+    ['Scan Interval','5 min'],
+    ['Market Window','7 days'],
+    ['Min Liquidity','$5,000'],
+    ['Signal Sources','Binance, OKX, Bybit, CLOB, CoinGecko, DDG, RSS'],
+    ['Parallel Workers','10 threads'],
+  ];
+  $('sys-config').innerHTML = config.map(([k,v])=>`<div class="sys-row"><span class="sys-key">${k}</span><span class="sys-val blue">${v}</span></div>`).join('');
+
+  $('sys-portfolio').innerHTML = [
+    ['Starting Capital',`€${fmt2(startCap)}`],
+    ['Current Cash',`€${fmt2(cash)}`],
+    ['Deployed',`€${fmt2(exposure)}`],
+    ['Portfolio Value',`€${fmt2(portfolioVal)}`],
+    ['Net P&L',`${plSign(totalPL)}€${fmt2(Math.abs(totalPL))}`],
+    ['Return',`${plSign(plPct)}${fmt1(plPct)}%`],
+    ['Bets Placed',`${closedBets.length+openBets.length}`],
+    ['Win Rate',`${fmt1(winRate)}%`],
+  ].map(([k,v])=>`<div class="sys-row"><span class="sys-key">${k}</span><span class="sys-val">${v}</span></div>`).join('');
+
+  // Edge distribution chart
+  const edges = DECISIONS.filter(d=>d.edge!=null).map(d=>d.edge*100);
+  if(edges.length){
+    const buckets = Array(10).fill(0);
+    const labels = [];
+    for(let i=0;i<10;i++){ labels.push(`${i*5}-${(i+1)*5}%`); }
+    edges.forEach(e=>{ const b=Math.min(Math.floor(e/5),9); if(b>=0)buckets[b]++; });
+    const ctx = $('edgeChart').getContext('2d');
+    new Chart(ctx,{
+      type:'bar',
+      data:{ labels, datasets:[{ data:buckets, backgroundColor:'rgba(88,166,255,0.4)', borderColor:'rgba(88,166,255,0.7)', borderWidth:1, borderRadius:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>c.parsed.y+' markets' }, titleFont:{family:'JetBrains Mono',size:9}, bodyFont:{family:'JetBrains Mono',size:12}, padding:8, cornerRadius:3, displayColors:false }},
+        scales:{ x:{ grid:{display:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9}}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)'}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},callback:v=>v}, border:{display:false} } }
+      }
+    });
+  } else {
+    $('edgeChart').parentElement.innerHTML = '<div class="section-hdr"><div class="section-title">Edge Distribution</div></div><div class="empty" style="padding-top:30px"><div class="empty-icon">📊</div><div class="empty-text">No data yet</div></div>';
+  }
+
+  // Signal breakdown summary
+  const sigCounts = {};
+  DECISIONS.forEach(d=>{ if(d.signal_breakdown){ Object.entries(d.signal_breakdown).forEach(([k,v])=>{ if(!sigCounts[k]) sigCounts[k]={pos:0,neg:0,neu:0}; const vs=String(v); if(vs.includes('✅'))sigCounts[k].pos++; else if(vs.includes('❌'))sigCounts[k].neg++; else sigCounts[k].neu++; }); }});
+  const el=$('sys-signals');
+  if(!Object.keys(sigCounts).length){ el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-text">No signal data yet</div></div>'; return; }
+  el.innerHTML = Object.entries(sigCounts).map(([k,v])=>{
+    const total=v.pos+v.neg+v.neu||1;
+    const pct=Math.round(v.pos/total*100);
+    return `<div class="sys-row"><span class="sys-key">${k}</span><span style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">${pct}% pos</span><div style="width:60px;height:3px;background:var(--bg3);border-radius:2px"><div style="width:${pct}%;height:100%;background:var(--blue);border-radius:2px"></div></div></span></div>`;
+  }).join('');
+})();
 </script>
 </body>
 </html>
