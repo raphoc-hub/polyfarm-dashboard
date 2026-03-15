@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolyFarm Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bg: '#0a0a0a',
+        surface: '#111111',
+        accent: '#00ff88',
+        accent2: '#3b82f6',
+        danger: '#ef4444',
+        warning: '#f59e0b',
+        success: '#10b981',
+        muted: '#6b7280',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background: #0a0a0a; color: #e5e5e5; font-family: 'Inter', system-ui, sans-serif; }
+  ::-webkit-scrollbar { width: 6px; } 
+  ::-webkit-scrollbar-track { background: #111111; }
+  ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 3px; }
+  .card { background: #111111; border: 1px solid #1f1f1f; border-radius: 12px; }
+  .accent { color: #00ff88; }
+  .badge-green { background: rgba(16,185,129,0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #ef4444; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #f59e0b; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+  
+</style>
+</head>
+<body>
+
+
+<nav class="flex items-center justify-between px-6 py-4 border-b border-border bg-surface sticky top-0 z-50">
+  <div>
+    <h1 class="text-xl font-bold accent">PolyFarm</h1>
+    <p class="text-xs text-muted">Prediction Market Trading</p>
+  </div>
+  <div class="flex items-center gap-4"><span class="text-xs text-muted">Live</span><span id="clock" class="text-sm text-muted font-mono"></span><span class="badge-green">● Running</span></div>
+</nav>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
+  
+<div class="card p-5 flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-muted text-sm">Portfolio Value</span>
+    <i data-lucide="trending-up" class="w-4 h-4 text-muted"></i>
+  </div>
+  <div class="text-2xl font-bold accent">€81.29</div>
+  <div class="flex items-center gap-2 text-sm text-muted">
+    <span class="badge-red">↓ 18.7%</span>
+    
+  </div>
+</div>
+  
+<div class="card p-5 flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-muted text-sm">Cash Available</span>
+    <i data-lucide="wallet" class="w-4 h-4 text-muted"></i>
+  </div>
+  <div class="text-2xl font-bold accent">€78.60</div>
+  <div class="flex items-center gap-2 text-sm text-muted">
+    
+    <span>ready to deploy</span>
+  </div>
+</div>
+  
+<div class="card p-5 flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-muted text-sm">Open Positions</span>
+    <i data-lucide="activity" class="w-4 h-4 text-muted"></i>
+  </div>
+  <div class="text-2xl font-bold accent">1</div>
+  <div class="flex items-center gap-2 text-sm text-muted">
+    
+    
+  </div>
+</div>
+  
+<div class="card p-5 flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-muted text-sm">P&L</span>
+    <i data-lucide="bar-chart-2" class="w-4 h-4 text-muted"></i>
+  </div>
+  <div class="text-2xl font-bold danger">-18.71</div>
+  <div class="flex items-center gap-2 text-sm text-muted">
+    <span class="badge-red">↓ 18.7%</span>
+    
+  </div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 px-6 pb-4">
+  <div class="card p-5">
+    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Portfolio Value</h2>
+    <canvas id="plChart" style="height:220px"></canvas>
+  </div>
+  <div class="card p-5">
+    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Active Markets — World Map</h2>
+    <div id="marketMap" style="height:320px; border-radius:12px; z-index:1;"></div>
+  </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-6 pb-6">
+  <div class="card p-5 lg:col-span-2">
+    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Recent Decisions</h2>
+    
+<input id="decisionsTable-search" type="text" placeholder="Search..."
+          class="mb-3 px-3 py-2 bg-surface border border-border rounded-lg text-sm text-muted w-full focus:outline-none focus:border-accent"
+          oninput="filterTable_decisionsTable(this.value)">
+<div class="overflow-x-auto rounded-lg border border-border">
+<table id="decisionsTable" class="min-w-full">
+  <thead class="bg-surface"><tr><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(0)">Market <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(1)">Decision <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(2)">Conviction <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(3)">Edge <span class="text-muted">↕</span></th></tr></thead>
+  <tbody id="decisionsTable-body"><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr></tbody>
+</table>
+</div>
+  </div>
+  <div class="card p-5">
+    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Activity Feed</h2>
+    <div class="flex flex-col">
+<div class="flex gap-3 py-2 border-b border-border last:border-0">
+  <span class="text-base leading-none mt-0.5">⏭️</span>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm text-muted truncate">?</p>
+    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
+  </div>
+</div>
+<div class="flex gap-3 py-2 border-b border-border last:border-0">
+  <span class="text-base leading-none mt-0.5">⏭️</span>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm text-muted truncate">?</p>
+    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
+  </div>
+</div>
+<div class="flex gap-3 py-2 border-b border-border last:border-0">
+  <span class="text-base leading-none mt-0.5">⏭️</span>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm text-muted truncate">?</p>
+    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
+  </div>
+</div>
+<div class="flex gap-3 py-2 border-b border-border last:border-0">
+  <span class="text-base leading-none mt-0.5">⏭️</span>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm text-muted truncate">?</p>
+    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
+  </div>
+</div></div>
+  </div>
+</div>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+
+<script>
+
+(function tick(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setTimeout(tick, 1000);
+})();
+
+new Chart(document.getElementById('plChart'), {
+  type: 'line',
+  data: { labels: ["Scan 1", "Scan 2", "Scan 3", "Scan 4", "Scan 5"], datasets: [{"label": "Portfolio Value", "data": [100.0, 100.0, 100.0, 100.0, 100.0], "borderColor": "#00ff88", "backgroundColor": "#00ff8822", "fill": true, "tension": 0.4, "pointRadius": 3, "borderWidth": 2}] },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#9ca3af' } }, title: { display: false, text: '', color: '#e5e5e5' } },
+    scales: {
+      x: { grid: { color: '#1f1f1f' }, ticks: { color: '#6b7280' } },
+      y: { grid: { color: '#1f1f1f' }, ticks: { color: '#6b7280' } }
+    }
+  }
+});
+
+var marketMap = L.map('marketMap', {zoomControl:true}).setView([47.5, 10.0], 3);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {attribution:'© OpenStreetMap © CARTO', maxZoom:19}).addTo(marketMap);
+
+L.circleMarker([47.49, 19.04], {
+  radius: 8, fillColor: '#00ff88',
+  color: '#fff', weight: 1, fillOpacity: 0.9
+}).addTo(marketMap).bindPopup(`<b>Hungary PM Market</b><br>Orbán: 37% | Magyar: 62%<br>Volume: $3.4M`);
+
+L.circleMarker([30.29, -81.44], {
+  radius: 8, fillColor: '#f59e0b',
+  color: '#fff', weight: 1, fillOpacity: 0.9
+}).addTo(marketMap).bindPopup(`<b>Masters Tournament</b><br>Scheffler: 19% | McIlroy: 9%`);
+
+L.circleMarker([41.9, 12.5], {
+  radius: 8, fillColor: '#00ff88',
+  color: '#fff', weight: 1, fillOpacity: 0.9
+}).addTo(marketMap).bindPopup(`<b>Italy WC Qualifier</b><br>Volume: $217K`);
+
+
+function sortTable_decisionsTable(col) {
+  const tb = document.getElementById('decisionsTable-body');
+  const rows = Array.from(tb.rows);
+  const asc = tb.dataset.sortCol == col && tb.dataset.sortDir == 'asc';
+  rows.sort((a,b) => {
+    const va = a.cells[col].innerText, vb = b.cells[col].innerText;
+    return asc ? vb.localeCompare(va, undefined, {numeric:true}) : va.localeCompare(vb, undefined, {numeric:true});
+  });
+  tb.dataset.sortCol = col; tb.dataset.sortDir = asc ? 'desc' : 'asc';
+  rows.forEach(r => tb.appendChild(r));
+}
+function filterTable_decisionsTable(q) {
+  const rows = document.getElementById('decisionsTable-body').rows;
+  q = q.toLowerCase();
+  for (let r of rows) {
+    r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+  }
+}
+lucide.createIcons();
+</script>
+</body>
+</html>
