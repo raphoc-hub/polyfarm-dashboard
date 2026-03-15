@@ -438,7 +438,10 @@ $('kpi-open-sub').textContent = `€${fmt2(cash)} cash available`;
     return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
-          <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:500">${b.market||'—'}</div>
+          <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:500">${b.slug||b.market_slug
+            ? `<a href="https://polymarket.com/event/${b.slug||b.market_slug}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.15)" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.15)'">${b.market||'—'} <span style="font-size:9px;color:var(--text3)">↗</span></a>`
+            : b.market||'—'
+          }</div>
           <div style="display:flex;gap:6px;align-items:center">
             <span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position}</span>
             <span class="pill pill-open">OPEN</span>
@@ -473,7 +476,10 @@ $('kpi-open-sub').textContent = `€${fmt2(cash)} cash available`;
     const estProb = b.estimated_prob||0;
     const edge = ((estProb - b.entry_price)*100);
     return `<tr>
-      <td class="main">${trunc(b.market||'',50)}</td>
+      <td class="main">${b.slug||b.market_slug
+        ? `<a href="https://polymarket.com/event/${b.slug||b.market_slug}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.1)" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.1)'">${trunc(b.market||'',50)} <span style="font-size:9px;color:var(--text3)">↗</span></a>`
+        : trunc(b.market||'',50)
+      }</td>
       <td><span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position||'—'}</span></td>
       <td>€${fmt2(b.stake||0)}</td>
       <td>€${fmt2(b.potential_payout||0)}</td>
@@ -518,7 +524,10 @@ function renderDecisions() {
         ${approved?`<span class="pill pill-yes">${d.direction||'YES'}</span>`:''}
         <span style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:auto">${fmtDate(d.timestamp)}</span>
       </div>
-      <div class="dec-question">${d.market_q||d.question||'—'}</div>
+      <div class="dec-question">${d.polymarket_url
+        ? `<a href="${d.polymarket_url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.15);transition:border-color 0.15s" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.15)'">${d.market_q||d.question||'—'} <span style="font-size:9px;color:var(--text3);margin-left:4px">↗</span></a>`
+        : d.market_q||d.question||'—'
+      }</div>
       <div style="display:flex;gap:16px;margin-top:6px">
         <span class="dec-meta">Market: <b style="color:var(--text2)">${market.toFixed(0)}¢</b></span>
         <span class="dec-meta">Model: <b style="color:var(--blue)">${posterior}</b></span>
