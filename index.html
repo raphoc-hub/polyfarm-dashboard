@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLYFARM — Predictive Intelligence</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --obsidian: #0a0a0f;
+    --obsidian-light: #101018;
+    --obsidian-mid: #16161f;
+    --obsidian-surface: #1e1e2a;
+    --electric: #2d7ff9;
+    --electric-dim: rgba(45, 127, 249, 0.12);
+    --electric-glow: rgba(45, 127, 249, 0.35);
+    --text-primary: #e8e8ef;
+    --text-secondary: #8888a0;
+    --text-muted: #50506a;
+    --green: #00c48c;
+    --green-dim: rgba(0, 196, 140, 0.12);
+    --red: #ff4757;
+    --red-dim: rgba(255, 71, 87, 0.12);
+    --border: rgba(255, 255, 255, 0.05);
+    --border-hover: rgba(45, 127, 249, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--obsidian);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .font-display { font-family: 'Playfair Display', serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--obsidian); }
+  ::-webkit-scrollbar-thumb { background: var(--obsidian-surface); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 196, 140, 0.5); }
+    50% { box-shadow: 0 0 0 4px rgba(0, 196, 140, 0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .animate-in {
+    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  .stat-card {
+    background: var(--obsidian-light);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .stat-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--electric) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .stat-card:hover::before { opacity: 0.6; }
+
+  .conviction-bar-bg {
+    height: 2px;
+    background: var(--obsidian-surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .conviction-fill {
+    height: 100%;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .decision-row {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s ease;
+  }
+  .decision-row:hover { background: rgba(45, 127, 249, 0.02); }
+  .decision-row:last-child { border-bottom: none; }
+
+  .verdict-buy {
+    border-left: 2px solid var(--electric);
+    color: var(--electric);
+  }
+  .verdict-skip {
+    border-left: 2px solid var(--text-muted);
+    color: var(--text-muted);
+  }
+
+  .pl-positive { color: var(--green); }
+  .pl-negative { color: var(--red); }
+
+  .panel {
+    background: var(--obsidian-light);
+    border: 1px solid var(--border);
+  }
+
+  #map {
+    height: 100%;
+    min-height: 360px;
+    background: var(--obsidian);
+  }
+  .leaflet-container { background: var(--obsidian) !important; }
+  .leaflet-popup-content-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  .leaflet-popup-content { margin: 0 !important; }
+  .leaflet-popup-tip { display: none !important; }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .divider { height: 1px; background: var(--border); }
+
+  /* PL badge glow */
+  .pl-badge-positive {
+    background: var(--green-dim);
+    border: 1px solid rgba(0, 196, 140, 0.2);
+  }
+  .pl-badge-negative {
+    background: var(--red-dim);
+    border: 1px solid rgba(255, 71, 87, 0.2);
+  }
+</style>
+</head>
+<body>
+
+<script>
+// ── Data Injection (Python replaces these placeholders) ─────────────────────
+const PORTFOLIO = {"starting_capital": 100, "cash": 78.6, "open_bets": [{"id": "bet_004", "market": "Will the price of Bitcoin be between $70,000 and $72,000 on March 16?", "market_id": "1538165", "news": "Vol regime at 0th percentile \u2014 lowest observed \u2014 massively suppresses tail risk; 24h \u03c3 \u2248 $1,984 with price centered at $70,970 inside a $2,000 target window strongly supports in-range outcome.", "direction": "UP", "position": "YES", "entry_price": 0.33, "estimated_prob": 0.42, "stake": 2.69, "potential_payout": 8.15, "potential_profit": 5.46, "confidence": "MEDIUM", "reasoning": "Vol model (0.57%/h blended, \u03c3_24h \u2248 2.79% = ~$1,984) places BTC at z1=-0.49 ($70k) and z2=+0.52 ($72k) from current $70,970, yielding N(0.52)-N(-0.49) \u2248 38.6% base probability; critically, vol regime is at the 0th percentile (extreme low), meaning realized vol over the next 24h is likely to undershoot Deribit IV of 58.3%, pushing true probability toward 42-46%, well above the 33% market price for a ~9% edge. Bullish technicals (1h UP 88%, CVD confirmed up, bid-heavy OB at +0.892) risk pushing BTC above $72k, but with price centered at $70,970 inside a $2,000 range and nearest resistance at $71,679 still within range, the mean-reversion dynamics under suppressed vol favor in-range resolution.", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T00:21:34.187169", "resolved_at": null, "result": null, "pl": null}], "closed_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $70,000 on March 14?", "market_id": "1525052", "news": "Current price is only 1.2% above the $70k strike with confirmed bearish MACD momentum across all three timeframes and a 24h low already within 0.5% of the target \u2014 resolution risk is non-trivial despite the binary appearing safe.", "direction": "DOWN", "position": "NO", "entry_price": 0.02300000000000002, "estimated_prob": 0.7376440736825973, "stake": 3.06, "potential_payout": 133.04, "potential_profit": 129.98, "confidence": "MEDIUM", "reasoning": "BTC is currently trading at $70,824 \u2014 already $824 above the $70,000 target with only 1 day to resolution, providing a meaningful buffer. However, the 24h low of $70,317 shows the price has tested dangerously close to the threshold, and bearish MACD signals across 5m/1h/4h timeframes with Extreme Fear at 16/100 create real downside risk. The log-normal model gives 64.3% vs the market's 97.7%, a 33-point gap that is too wide to fully dismiss \u2014 a 3.2% daily vol move would breach $70k easily.", "end_date": "2026-03-14T16:00:00Z", "status": "LOST", "placed_at": "2026-03-14T14:54:06.471912", "resolved_at": "2026-03-14T18:29:53.183476+00:00", "result": "LOST", "pl": -3.06}, {"id": "bet_002", "market": "Will the price of Ethereum be above $2,100 on March 14?", "market_id": "1524978", "news": "Mathematical mispricing: only +1.0% move required in 24h but market implies ~5% \u2014 a 35pp gap that even aggressive bearish drift adjustments cannot fully justify.", "direction": "UP", "position": "YES", "entry_price": 0.05, "estimated_prob": 0.3491607512235867, "stake": 8.0, "potential_payout": 160.0, "potential_profit": 152.0, "confidence": "MEDIUM", "reasoning": "The market is severely mispricing this: ETH only needs a +1.0% move in 24h yet is priced at 5% implied probability. Log-normal model gives 40.2% and even with heavy bearish adjustments for the -5.07% 24h drawdown, bearish 1h/4h MACD structure, and macro extreme fear, a realistic probability floor is ~25-30%. The bid-heavy order book (+0.844) and near-zero funding rate suggest no extreme short-side pressure, and extreme fear (16/100) historically marks capitulation zones not continuation zones.", "end_date": "2026-03-14T16:00:00Z", "status": "LOST", "placed_at": "2026-03-14T14:54:56.373736", "resolved_at": "2026-03-14T18:29:53.183476+00:00", "result": "LOST", "pl": -8.0}, {"id": "bet_003", "market": "Ethereum Up or Down on March 14?", "market_id": "1568774", "news": "2% implied probability is a ~10x statistical mispricing \u2014 even under heavy bearish conditions, crypto up-day base rate does not drop this low; extreme oversold + Extreme Fear (16/100) historically marks short-term reversal zones.", "direction": "UP", "position": "YES", "entry_price": 0.02, "estimated_prob": 0.22, "stake": 7.65, "potential_payout": 382.5, "potential_profit": 374.85, "confidence": "MEDIUM", "reasoning": "All three timeframes are bearish and momentum is clearly downward, but the market's 2% implied probability for an 'Up' close is a severe statistical underpricing. Even in aggressive downtrends, the base-rate probability of ETH posting a positive day within a 24h window rarely falls below 20-25% \u2014 the market is pricing this as a near-certainty of continued decline. ETH is already down 5.5% on the day and sitting near the 24h low ($2,061), which alone creates mean-reversion pressure. Extreme Fear at 16/100 and a bid-heavy order book (+0.974) add marginal contrarian support, while the slightly negative funding rate signals crowded short positioning that can unwind sharply.", "end_date": "2026-03-14T16:00:00Z", "status": "LOST", "placed_at": "2026-03-14T15:15:31.052717", "resolved_at": "2026-03-14T18:29:53.183476+00:00", "result": "LOST", "pl": -7.65}], "total_pl": -18.71};
+const DECISIONS = [];
+</script>
+
+<div class="max-w-[1440px] mx-auto px-8 py-10">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <header class="flex items-end justify-between mb-12 animate-in" style="animation-delay: 0s">
+    <div>
+      <div class="flex items-baseline gap-5">
+        <h1 class="font-display text-[52px] font-black tracking-[-0.02em] leading-none" style="color: var(--text-primary)">POLYFARM</h1>
+        <span class="section-label" style="position: relative; top: -4px;">Predictive Intelligence</span>
+      </div>
+      <p class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="live-timestamp"></p>
+    </div>
+    <div id="pl-badge"></div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       STAT CARDS
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="grid grid-cols-4 gap-[1px]" style="background: var(--border); margin-bottom: 1px;">
+    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.06s">
+      <div class="section-label mb-4">Portfolio Value</div>
+      <div class="font-display text-[32px] font-bold leading-none tracking-tight" id="stat-portfolio">—</div>
+      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-portfolio-sub"></div>
+    </div>
+    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.10s">
+      <div class="section-label mb-4">Cash Available</div>
+      <div class="font-display text-[32px] font-bold leading-none tracking-tight" id="stat-cash">—</div>
+      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-cash-sub"></div>
+    </div>
+    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.14s">
+      <div class="section-label mb-4">Open Positions</div>
+      <div class="font-display text-[32px] font-bold leading-none tracking-tight" id="stat-open">—</div>
+      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-open-sub"></div>
+    </div>
+    <div class="stat-card px-6 py-5 animate-in" style="animation-delay: 0.18s">
+      <div class="section-label mb-4">Win Rate</div>
+      <div class="font-display text-[32px] font-bold leading-none tracking-tight" id="stat-winrate">—</div>
+      <div class="text-[10px] mt-3 tracking-wide" style="color: var(--text-muted)" id="stat-winrate-sub"></div>
+    </div>
+  </div>
+
+  <div style="height: 32px;"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       EQUITY CHART + MAP
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="grid grid-cols-5 gap-4 mb-8">
+    <!-- Equity Chart: 3 cols -->
+    <div class="col-span-3 panel p-6 animate-in" style="animation-delay: 0.24s">
+      <div class="section-label mb-5">Equity Curve</div>
+      <div style="height: 340px; position: relative;">
+        <canvas id="equityChart"></canvas>
+      </div>
+    </div>
+    <!-- Map: 2 cols -->
+    <div class="col-span-2 panel p-6 animate-in" style="animation-delay: 0.30s">
+      <div class="section-label mb-5">Market Coverage</div>
+      <div id="map" style="height: 340px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       DECISIONS LOG
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="animate-in" style="animation-delay: 0.36s">
+    <div class="flex items-center justify-between mb-4">
+      <div class="section-label">Decision Log</div>
+      <div class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="decision-count"></div>
+    </div>
+    <div class="panel overflow-hidden">
+      <!-- Header -->
+      <div class="grid grid-cols-12 gap-3 px-6 py-3" style="border-bottom: 1px solid var(--border);">
+        <div class="col-span-1 section-label">Verdict</div>
+        <div class="col-span-5 section-label">Market</div>
+        <div class="col-span-1 section-label">Price</div>
+        <div class="col-span-1 section-label">Edge</div>
+        <div class="col-span-2 section-label">Conviction</div>
+        <div class="col-span-2 section-label">Time</div>
+      </div>
+      <div id="decisions-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BOTTOM STRIP
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="flex items-center justify-between mt-10 pt-5 animate-in" style="animation-delay: 0.42s; border-top: 1px solid var(--border);">
+    <div class="flex items-center gap-3">
+      <div style="width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulseDot 2.5s infinite;"></div>
+      <span class="text-[10px] tracking-wide" style="color: var(--text-secondary)">Scanner Active</span>
+    </div>
+    <div class="flex items-center gap-8">
+      <span class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="last-scan"></span>
+      <span class="text-[10px] tracking-wide" style="color: var(--text-muted)" id="total-analyzed"></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPT
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  const fmt = (n, d=2) => Number(n).toFixed(d);
+  const truncate = (s, n) => s.length > n ? s.substring(0, n) + '\u2026' : s;
+
+  // ── Compute ────────────────────────────────────────────────────────────
+  const cash = PORTFOLIO.cash || 0;
+  const startCap = PORTFOLIO.starting_capital || 100;
+  const openBets = PORTFOLIO.open_bets || [];
+  const closedBets = PORTFOLIO.closed_bets || [];
+  const exposure = openBets.reduce((s, b) => s + (b.stake || 0), 0);
+  const portfolioValue = cash + exposure;
+  const totalPL = PORTFOLIO.total_pl || 0;
+  const wins = closedBets.filter(b => b.result === 'WON').length;
+  const losses = closedBets.filter(b => b.result === 'LOST').length;
+  const winRate = closedBets.length > 0 ? (wins / closedBets.length * 100) : 0;
+
+  // ── Number Counter Animation ───────────────────────────────────────────
+  function animateCounter(el, target, prefix='$', suffix='', decimals=2) {
+    const duration = 1400;
+    const start = performance.now();
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 5);
+      el.textContent = prefix + fmt(target * eased, decimals) + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = prefix + fmt(target, decimals) + suffix;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ── Timestamp ──────────────────────────────────────────────────────────
+  document.getElementById('live-timestamp').textContent = new Date().toLocaleString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+
+  // ── Stat Cards ─────────────────────────────────────────────────────────
+  animateCounter(document.getElementById('stat-portfolio'), portfolioValue);
+  document.getElementById('stat-portfolio-sub').textContent = 'Starting capital: $' + fmt(startCap);
+
+  animateCounter(document.getElementById('stat-cash'), cash);
+  document.getElementById('stat-cash-sub').textContent = fmt(cash / portfolioValue * 100, 1) + '% liquid';
+
+  document.getElementById('stat-open').textContent = openBets.length;
+  document.getElementById('stat-open-sub').textContent = '$' + fmt(exposure) + ' total exposure';
+
+  animateCounter(document.getElementById('stat-winrate'), winRate, '', '%', 1);
+  document.getElementById('stat-winrate-sub').textContent = wins + 'W \u00b7 ' + losses + 'L of ' + closedBets.length + ' closed';
+
+  // ── P&L Badge ──────────────────────────────────────────────────────────
+  const plBadge = document.getElementById('pl-badge');
+  const isPos = totalPL >= 0;
+  const plSign = isPos ? '+' : '';
+  const plPct = fmt(totalPL / startCap * 100, 1);
+  plBadge.innerHTML = `
+    <div class="${isPos ? 'pl-badge-positive' : 'pl-badge-negative'} px-5 py-3" style="text-align: right;">
+      <div class="section-label mb-2">Net P&L</div>
+      <div class="font-display text-[26px] font-bold leading-none ${isPos ? 'pl-positive' : 'pl-negative'}">${plSign}$${fmt(Math.abs(totalPL))}</div>
+      <div class="text-[10px] mt-2" style="color: var(--text-muted)">${plSign}${plPct}% all time</div>
+    </div>
+  `;
+
+  // ── Equity Chart ───────────────────────────────────────────────────────
+  const labels = ['Start'];
+  const values = [startCap];
+  let running = startCap;
+  const sorted = [...closedBets].sort((a, b) =>
+    (a.resolved_at || a.placed_at || '').localeCompare(b.resolved_at || b.placed_at || '')
+  );
+  sorted.forEach(bet => {
+    running = +(running + (bet.pl || 0)).toFixed(2);
+    const ts = bet.resolved_at || bet.placed_at || '';
+    let label = '?';
+    try { label = new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+    catch(e) { label = ts.substring(0, 10); }
+    labels.push(label);
+    values.push(running);
+  });
+  labels.push('Now');
+  values.push(+(cash + exposure).toFixed(2));
+
+  const ctx = document.getElementById('equityChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 340);
+  gradient.addColorStop(0, 'rgba(45, 127, 249, 0.10)');
+  gradient.addColorStop(0.7, 'rgba(45, 127, 249, 0.02)');
+  gradient.addColorStop(1, 'rgba(45, 127, 249, 0.0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        borderColor: '#2d7ff9',
+        borderWidth: 1.5,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 3,
+        pointBackgroundColor: '#2d7ff9',
+        pointBorderColor: '#0a0a0f',
+        pointBorderWidth: 2,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#2d7ff9',
+        pointHoverBorderColor: '#e8e8ef',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#16161f',
+          borderColor: 'rgba(45, 127, 249, 0.25)',
+          borderWidth: 1,
+          titleFont: { family: 'JetBrains Mono', size: 10, weight: '400' },
+          bodyFont: { family: 'Playfair Display', size: 16, weight: '700' },
+          titleColor: '#50506a',
+          bodyColor: '#e8e8ef',
+          padding: { top: 10, bottom: 10, left: 14, right: 14 },
+          cornerRadius: 0,
+          displayColors: false,
+          callbacks: { label: (c) => '$' + c.parsed.y.toFixed(2) }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.025)', drawBorder: false },
+          ticks: { color: '#50506a', font: { family: 'JetBrains Mono', size: 9 }, padding: 8 },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.025)', drawBorder: false },
+          ticks: {
+            color: '#50506a',
+            font: { family: 'JetBrains Mono', size: 9 },
+            padding: 12,
+            callback: v => '$' + v
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+
+  // ── Map ────────────────────────────────────────────────────────────────
+  const map = L.map('map', {
+    zoomControl: false,
+    attributionControl: false,
+    scrollWheelZoom: false,
+    dragging: true,
+  }).setView([30, 0], 2);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18,
+  }).addTo(map);
+
+  function marketGeo(q) {
+    q = q.toLowerCase();
+    if (/bitcoin|btc|ethereum|eth|crypto|defi|token|solana|xrp/.test(q)) return [40.71, -74.01, 'New York'];
+    if (/president|senate|congress|us election|white house|trump|biden/.test(q)) return [38.90, -77.04, 'Washington D.C.'];
+    if (/uk|britain|england|premier league/.test(q)) return [51.51, -0.13, 'London'];
+    if (/euro|european union|eu |ecb/.test(q)) return [50.85, 4.35, 'Brussels'];
+    if (/france|french|paris/.test(q)) return [48.86, 2.35, 'Paris'];
+    if (/germany|german|berlin/.test(q)) return [52.52, 13.41, 'Berlin'];
+    if (/china|chinese|beijing|taiwan/.test(q)) return [39.90, 116.41, 'Beijing'];
+    if (/japan|tokyo|nikkei/.test(q)) return [35.68, 139.69, 'Tokyo'];
+    if (/israel|gaza|iran|saudi|middle east/.test(q)) return [31.77, 35.21, 'Jerusalem'];
+    if (/russia|ukraine|putin|moscow/.test(q)) return [55.76, 37.62, 'Moscow'];
+    return [20.0, 0.0, 'Global'];
+  }
+
+  const allMarkets = [...openBets, ...closedBets];
+  const seenGeo = new Set();
+
+  allMarkets.forEach(bet => {
+    const [lat, lng, label] = marketGeo(bet.market || '');
+    const key = lat + ',' + lng;
+    if (seenGeo.has(key)) return;
+    seenGeo.add(key);
+    const isOpen = bet.status === 'OPEN';
+
+    // Outer glow ring for open positions
+    if (isOpen) {
+      L.circleMarker([lat, lng], {
+        radius: 14,
+        fillColor: 'transparent',
+        color: '#2d7ff9',
+        weight: 1,
+        opacity: 0.2,
+      }).addTo(map);
+    }
+
+    L.circleMarker([lat, lng], {
+      radius: isOpen ? 5 : 3,
+      fillColor: isOpen ? '#2d7ff9' : '#50506a',
+      fillOpacity: isOpen ? 0.9 : 0.5,
+      color: isOpen ? '#2d7ff9' : '#50506a',
+      weight: 1,
+      opacity: isOpen ? 0.7 : 0.3,
+    }).addTo(map).bindPopup(
+      '<div style="font-family:JetBrains Mono;font-size:10px;color:#e8e8ef;background:#16161f;padding:10px 12px;border:1px solid rgba(45,127,249,0.15);max-width:240px;line-height:1.5;">' +
+      '<strong style="color:#2d7ff9;letter-spacing:1px;font-size:9px;">' + label.toUpperCase() + '</strong><br/>' +
+      '<span style="color:#8888a0">' + truncate(bet.market || '', 55) + '</span></div>'
+    );
+  });
+
+  // Also add markers from decisions
+  DECISIONS.forEach(d => {
+    const q = d.market_q || d.question || '';
+    const [lat, lng, label] = marketGeo(q);
+    const key = lat + ',' + lng;
+    if (seenGeo.has(key)) return;
+    seenGeo.add(key);
+    L.circleMarker([lat, lng], {
+      radius: 2,
+      fillColor: '#50506a',
+      fillOpacity: 0.3,
+      color: '#50506a',
+      weight: 0.5,
+      opacity: 0.2,
+    }).addTo(map);
+  });
+
+  // ── Decision Log ───────────────────────────────────────────────────────
+  const tbody = document.getElementById('decisions-body');
+  const sortedDec = [...DECISIONS].reverse();
+
+  sortedDec.forEach((d, i) => {
+    const approved = d.approved;
+    const verdict = approved ? 'BUY' : 'SKIP';
+    const vClass = approved ? 'verdict-buy' : 'verdict-skip';
+    const question = truncate(d.market_q || d.question || '\u2014', 60);
+    const price = d.price != null ? '$' + fmt(d.price, 3) : '\u2014';
+    const edge = d.edge != null ? (d.edge * 100).toFixed(1) + '%' : '\u2014';
+    const conviction = d.conviction != null ? d.conviction : (d.conviction_score || 0);
+    const convPct = Math.min(Math.max(conviction * 10, 0), 100);
+
+    let timeLabel = '\u2014';
+    try {
+      const dt = new Date(d.timestamp);
+      timeLabel = dt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch(e) {}
+
+    const convColor = approved ? 'var(--electric)' : 'rgba(80, 80, 106, 0.5)';
+
+    const row = document.createElement('div');
+    row.className = 'decision-row grid grid-cols-12 gap-3 px-6 py-3 items-center animate-in';
+    row.style.animationDelay = (0.4 + i * 0.025) + 's';
+    row.innerHTML =
+      '<div class="col-span-1">' +
+        '<span class="' + vClass + ' pl-2 py-0.5 text-[9px] font-semibold tracking-[3px]">' + verdict + '</span>' +
+      '</div>' +
+      '<div class="col-span-5 text-[11px]" style="color: var(--text-secondary)">' + question + '</div>' +
+      '<div class="col-span-1 font-display text-[13px]" style="color: var(--text-primary)">' + price + '</div>' +
+      '<div class="col-span-1 text-[11px]" style="color: ' + (d.edge > 0 ? 'var(--electric)' : 'var(--text-muted)') + '">' + edge + '</div>' +
+      '<div class="col-span-2">' +
+        '<div class="conviction-bar-bg"><div class="conviction-fill" style="width:' + convPct + '%;background:' + convColor + ';"></div></div>' +
+      '</div>' +
+      '<div class="col-span-2 text-[10px]" style="color: var(--text-muted)">' + timeLabel + '</div>';
+    tbody.appendChild(row);
+  });
+
+  document.getElementById('decision-count').textContent = DECISIONS.length + ' decisions analyzed';
+
+  // ── Bottom Strip ───────────────────────────────────────────────────────
+  const lastDec = DECISIONS.length > 0 ? DECISIONS[DECISIONS.length - 1] : null;
+  if (lastDec && lastDec.timestamp) {
+    try {
+      const d = new Date(lastDec.timestamp);
+      document.getElementById('last-scan').textContent = 'Last scan: ' + d.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+    } catch(e) {}
+  }
+  document.getElementById('total-analyzed').textContent = DECISIONS.length + ' markets scanned';
+
+})();
+</script>
+</body>
+</html>
