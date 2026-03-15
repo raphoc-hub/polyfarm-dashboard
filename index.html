@@ -3,608 +3,1629 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POLYFARM — Live Dashboard</title>
+<title>PolyFarm — Trading Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+const PORTFOLIO = {"starting_capital": 100, "cash": 0.0, "open_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "news": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "direction": "UP", "position": "YES", "entry_price": 0.46, "estimated_prob": 0.6784155045280025, "stake": 8.0, "potential_payout": 17.39, "potential_profit": 9.39, "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:36.065488", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_002", "market": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "news": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "direction": "UP", "position": "YES", "entry_price": 0.72, "estimated_prob": 0.9004609741558446, "stake": 8.0, "potential_payout": 11.11, "potential_profit": 3.11, "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:45.396838", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_003", "market": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.5234581349043829, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:05.311196", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_004", "market": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:20.699322", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_005", "market": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.69, "estimated_prob": 0.8998000337148219, "stake": 8.0, "potential_payout": 11.59, "potential_profit": 3.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:21.603219", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_006", "market": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "news": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:27.013066", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_007", "market": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.26, "estimated_prob": 0.45451419883021227, "stake": 8.0, "potential_payout": 30.77, "potential_profit": 22.77, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:32.108358", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_008", "market": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.67, "estimated_prob": 0.8827578551591637, "stake": 8.0, "potential_payout": 11.94, "potential_profit": 3.94, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:00.470816", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_009", "market": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.21, "estimated_prob": 0.2993808552445522, "stake": 7.02, "potential_payout": 33.43, "potential_profit": 26.41, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:03.508341", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_010", "market": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "news": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:05.147268", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_011", "market": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.83, "estimated_prob": 0.9562717971088787, "stake": 8.0, "potential_payout": 9.64, "potential_profit": 1.64, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:12.117070", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_012", "market": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.09, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 88.89, "potential_profit": 80.89, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:15.601867", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_013", "market": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.82, "estimated_prob": 0.97, "stake": 4.98, "potential_payout": 6.07, "potential_profit": 1.09, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:25.166369", "resolved_at": null, "result": null, "pl": null}], "closed_bets": [], "total_pl": 0};
+const DECISIONS = [{"approved": false, "market_q": "Will the price of Ethereum be between $2,000 and $2,100 on March 19?", "price": 0.27, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.408529"}, {"approved": false, "market_q": "Will the price of Solana be above $130 on March 19?", "price": 0.043, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.408677"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 20?", "price": 0.14, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.408813"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.408942"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 20?", "price": 0.049, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.409087"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 19?", "price": 0.063, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.409174"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 19?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.409247"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-15T17:26:52.409462"}];
+</script>
 <style>
 :root {
-  --bg: #080b10;
-  --bg1: #0d1117;
-  --bg2: #161b22;
-  --bg3: #1c2128;
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #161616;
+  --surface3: #1a1a1a;
   --border: rgba(255,255,255,0.06);
-  --border2: rgba(255,255,255,0.10);
-  --blue: #58a6ff;
-  --blue-dim: rgba(88,166,255,0.10);
-  --green: #3fb950;
-  --green-dim: rgba(63,185,80,0.10);
-  --red: #f85149;
-  --red-dim: rgba(248,81,73,0.10);
-  --yellow: #d29922;
-  --yellow-dim: rgba(210,153,34,0.10);
-  --purple: #bc8cff;
-  --text: #e6edf3;
-  --text2: #8b949e;
-  --text3: #484f58;
-  --mono: 'JetBrains Mono', monospace;
-  --sans: 'Inter', sans-serif;
+  --border-focus: rgba(255,255,255,0.12);
+  --accent: #7c3aed;
+  --accent2: #2563eb;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --text: #fafafa;
+  --text2: #a1a1aa;
+  --text3: #52525b;
+  --text4: #27272a;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; -webkit-font-smoothing:antialiased; }
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:2px; }
 
-/* Layout */
-.app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
-.topbar { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:52px; background:var(--bg1); border-bottom:1px solid var(--border); flex-shrink:0; }
-.topbar-left { display:flex; align-items:center; gap:12px; }
-.logo { font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:0.04em; color:var(--text); }
-.logo span { color:var(--blue); }
-.badge-live { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--green); background:var(--green-dim); border:1px solid rgba(63,185,80,0.2); padding:2px 8px; border-radius:3px; font-family:var(--mono); }
-.dot-live { width:5px; height:5px; border-radius:50%; background:var(--green); animation:blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.topbar-right { font-family:var(--mono); font-size:10px; color:var(--text3); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Nav tabs */
-.tabs { display:flex; align-items:center; gap:1px; padding:0 20px; background:var(--bg1); border-bottom:1px solid var(--border); flex-shrink:0; }
-.tab { padding:10px 16px; font-size:12px; font-weight:500; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; white-space:nowrap; user-select:none; }
-.tab:hover { color:var(--text); }
-.tab.active { color:var(--blue); border-bottom-color:var(--blue); }
-.tab-badge { display:inline-block; font-size:9px; font-family:var(--mono); background:var(--bg3); padding:1px 5px; border-radius:3px; margin-left:5px; color:var(--text3); }
-.tab.active .tab-badge { background:var(--blue-dim); color:var(--blue); }
+html { font-size: 14px; }
 
-/* Content */
-.content { flex:1; overflow:hidden; position:relative; }
-.panel { display:none; height:100%; overflow-y:auto; padding:20px; }
-.panel.active { display:block; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* Cards */
-.card { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:16px 20px; }
-.card-sm { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:12px 16px; }
-.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-@media(max-width:900px) { .grid4{grid-template-columns:repeat(2,1fr);} .grid3{grid-template-columns:repeat(2,1fr);} }
-@media(max-width:600px) { .grid4{grid-template-columns:1fr 1fr;} .grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} }
+/* ─── TOPBAR ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
 
-/* Stat card */
-.stat-label { font-size:10px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
-.stat-value { font-family:var(--mono); font-size:22px; font-weight:600; line-height:1; }
-.stat-sub { font-size:10px; color:var(--text3); margin-top:6px; font-family:var(--mono); }
-.stat-delta { font-size:11px; font-weight:600; margin-top:4px; }
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-/* Colors */
-.green { color:var(--green); }
-.red { color:var(--red); }
-.blue { color:var(--blue); }
-.yellow { color:var(--yellow); }
-.muted { color:var(--text2); }
-.dim { color:var(--text3); }
+.logo {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
 
-/* Table */
-.tbl { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11px; }
-.tbl th { text-align:left; padding:8px 12px; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text3); background:var(--bg3); border-bottom:1px solid var(--border); font-weight:500; white-space:nowrap; }
-.tbl td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text2); vertical-align:middle; }
-.tbl tr:last-child td { border-bottom:none; }
-.tbl tr:hover td { background:rgba(255,255,255,0.015); }
-.tbl .main { color:var(--text); font-size:12px; max-width:320px; }
+.logo span {
+  color: var(--accent);
+}
 
-/* Pills */
-.pill { display:inline-block; font-size:9px; font-family:var(--mono); letter-spacing:0.06em; padding:2px 7px; border-radius:3px; font-weight:600; }
-.pill-yes { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(88,166,255,0.2); }
-.pill-no  { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,81,73,0.2); }
-.pill-open   { background:var(--yellow-dim); color:var(--yellow); border:1px solid rgba(210,153,34,0.2); }
-.pill-won    { background:var(--green-dim); color:var(--green); border:1px solid rgba(63,185,80,0.2); }
-.pill-lost   { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,81,73,0.2); }
-.pill-skip   { background:rgba(72,79,88,0.3); color:var(--text3); border:1px solid rgba(72,79,88,0.3); }
-.pill-bet    { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(88,166,255,0.2); }
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.05em;
+}
 
-/* Progress bar */
-.bar-bg { height:3px; background:var(--bg3); border-radius:2px; overflow:hidden; margin-top:6px; }
-.bar-fill { height:100%; border-radius:2px; transition:width 1s ease; }
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
 
-/* Section header */
-.section-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.section-title { font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text2); }
-.section-sub { font-size:10px; color:var(--text3); font-family:var(--mono); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 
-/* Empty state */
-.empty { text-align:center; padding:48px 20px; color:var(--text3); }
-.empty-icon { font-size:28px; margin-bottom:12px; opacity:0.4; }
-.empty-text { font-size:12px; }
+.topbar-right {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+}
 
-/* Divider */
-.divider { height:1px; background:var(--border); margin:16px 0; }
+/* ─── TABS ─── */
+.tabs-container {
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-container::-webkit-scrollbar { display: none; }
 
-/* Decision analysis card */
-.dec-card { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; }
-.dec-card:hover { border-color:var(--border2); }
-.dec-card.approved { border-left:2px solid var(--blue); }
-.dec-card.rejected { border-left:2px solid var(--bg3); }
-.dec-hdr { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-.dec-question { font-size:12px; color:var(--text); margin-bottom:4px; line-height:1.4; }
-.dec-meta { font-size:10px; color:var(--text3); font-family:var(--mono); }
-.dec-body { display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
-.dec-body.open { display:block; }
-.dec-signal-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:10px; font-family:var(--mono); }
-.dec-signal-row:last-child { border-bottom:none; }
-.signal-name { color:var(--text2); }
-.signal-val { font-weight:600; }
-.signal-pos { color:var(--green); }
-.signal-neg { color:var(--red); }
-.signal-neu { color:var(--text3); }
+.tabs {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+}
 
-/* System tab */
-.sys-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:11px; }
-.sys-row:last-child { border-bottom:none; }
-.sys-key { color:var(--text2); font-family:var(--mono); }
-.sys-val { font-family:var(--mono); font-weight:500; }
+.tab {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  letter-spacing: -0.01em;
+}
 
-/* Chart container */
-.chart-wrap { position:relative; }
+.tab:hover { color: var(--text2); }
+
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── MAIN CONTENT ─── */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── STAT CARDS ─── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  transition: border-color 0.15s;
+}
+
+.stat-card:hover { border-color: var(--border-focus); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.yellow { color: var(--yellow); }
+
+.stat-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+}
+
+/* ─── CHARTS GRID ─── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.chart-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 200px;
+}
+
+/* ─── ACTIVITY FEED ─── */
+.activity-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child { border-bottom: none; }
+
+.activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.activity-icon.bet { background: rgba(124,58,237,0.12); }
+.activity-icon.won { background: rgba(34,197,94,0.12); }
+.activity-icon.lost { background: rgba(239,68,68,0.12); }
+.activity-icon.skip { background: rgba(82,82,91,0.2); }
+
+.activity-body { flex: 1; min-width: 0; }
+
+.activity-title {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-meta {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.activity-right {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* ─── PILLS ─── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+}
+
+.pill-yes { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.25); color: var(--green); }
+.pill-no { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: var(--red); }
+.pill-bet { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3); color: #a78bfa; }
+.pill-skip { background: rgba(82,82,91,0.15); border-color: rgba(82,82,91,0.3); color: var(--text3); }
+.pill-won { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.25); color: var(--green); }
+.pill-lost { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: var(--red); }
+.pill-high { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); color: var(--green); }
+.pill-medium { background: rgba(234,179,8,0.08); border-color: rgba(234,179,8,0.2); color: var(--yellow); }
+.pill-low { background: rgba(82,82,91,0.15); border-color: rgba(82,82,91,0.3); color: var(--text3); }
+
+/* ─── POSITION CARDS ─── */
+.positions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+}
+
+.position-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  transition: border-color 0.15s;
+}
+
+.position-card:hover { border-color: var(--border-focus); }
+
+.position-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.position-market {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+
+.position-market a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.position-market a:hover { color: var(--accent); }
+
+.ext-link {
+  font-size: 10px;
+  color: var(--text3);
+  margin-left: 3px;
+}
+
+.position-pills {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.position-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pos-stat-label {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.pos-stat-value {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.position-expiry {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+.position-reasoning {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 14px; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--text3); }
+
+/* ─── HISTORY TABLE ─── */
+.history-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.summary-item { }
+.summary-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.summary-value { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--text); }
+.summary-value.green { color: var(--green); }
+.summary-value.red { color: var(--red); }
+
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--surface2);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+
+tbody td {
+  padding: 11px 16px;
+  color: var(--text2);
+  vertical-align: middle;
+}
+
+tbody td:first-child { color: var(--text); }
+
+.td-mono {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.td-link a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.td-link a:hover { color: var(--accent); }
+
+/* ─── DECISIONS LOG ─── */
+.decisions-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.filter-btn:hover {
+  border-color: var(--border-focus);
+  color: var(--text2);
+}
+
+.filter-btn.active {
+  background: var(--surface2);
+  border-color: var(--border-focus);
+  color: var(--text);
+}
+
+.decisions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.decision-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+
+.decision-card:hover { border-color: var(--border-focus); }
+.decision-card.expanded { border-color: var(--border-focus); }
+
+.decision-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.decision-pills {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.decision-market {
+  flex: 1;
+  min-width: 0;
+}
+
+.decision-market-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.decision-market-name a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.decision-market-name a:hover { color: var(--accent); }
+
+.decision-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.decision-meta-item {
+  text-align: right;
+}
+
+.decision-meta-label {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.decision-meta-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.decision-timestamp {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+.conviction-bar-wrap {
+  padding: 0 16px 12px;
+  margin-top: -6px;
+}
+
+.conviction-bar-track {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.conviction-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.4s ease;
+}
+
+.decision-expanded {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+  display: none;
+}
+
+.decision-card.expanded .decision-expanded { display: block; }
+
+.expanded-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.expanded-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.bayes-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bayes-item {
+  font-size: 12px;
+  color: var(--text2);
+  font-family: var(--mono);
+  padding: 5px 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.signal-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.signal-table tr { border-bottom: 1px solid var(--border); }
+.signal-table tr:last-child { border-bottom: none; }
+
+.signal-table td {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.signal-table td:first-child {
+  color: var(--text3);
+  font-weight: 500;
+  width: 90px;
+}
+
+.signal-table td:last-child { color: var(--text2); font-family: var(--mono); }
+
+.reasoning-block {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.reasoning-text {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.key-signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(37,99,235,0.1);
+  border: 1px solid rgba(37,99,235,0.25);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 10px;
+}
+
+/* ─── SYSTEM TAB ─── */
+.system-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.system-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.system-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 14px;
+}
+
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.config-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.config-table tr:last-child { border-bottom: none; }
+
+.config-table td {
+  padding: 9px 0;
+  font-size: 13px;
+}
+
+.config-table td:first-child {
+  color: var(--text3);
+  width: 50%;
+}
+
+.config-table td:last-child {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-align: right;
+}
+
+.signal-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signal-bar-item {}
+.signal-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+
+.signal-bar-track {
+  height: 4px;
+  background: var(--border-focus);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.signal-bar-fill {
+  height: 100%;
+  background: var(--accent2);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* ─── CHEVRON ─── */
+.chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--text3);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.decision-card.expanded .chevron { transform: rotate(180deg); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .expanded-grid { grid-template-columns: 1fr; }
+  .system-grid { grid-template-columns: 1fr; }
+  .positions-grid { grid-template-columns: 1fr; }
+  .decision-meta { display: none; }
+  .topbar { padding: 0 16px; }
+  .content { padding: 20px 16px; }
+  .tabs-container { padding: 0 16px; }
+  .history-summary { gap: 20px; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .stat-value { font-size: 20px; }
+}
+
+/* ─── SCROLL ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--text4); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ─── COUNTER ANIMATION ─── */
+.counter { display: inline-block; }
 </style>
 </head>
 <body>
-<script>
-const PORTFOLIO = {"starting_capital": 100, "cash": 0.0, "open_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "news": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "direction": "UP", "position": "YES", "entry_price": 0.46, "estimated_prob": 0.6784155045280025, "stake": 8.0, "potential_payout": 17.39, "potential_profit": 9.39, "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:36.065488", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_002", "market": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "news": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "direction": "UP", "position": "YES", "entry_price": 0.72, "estimated_prob": 0.9004609741558446, "stake": 8.0, "potential_payout": 11.11, "potential_profit": 3.11, "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:45.396838", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_003", "market": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.5234581349043829, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:05.311196", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_004", "market": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:20.699322", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_005", "market": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.69, "estimated_prob": 0.8998000337148219, "stake": 8.0, "potential_payout": 11.59, "potential_profit": 3.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:21.603219", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_006", "market": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "news": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:27.013066", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_007", "market": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.26, "estimated_prob": 0.45451419883021227, "stake": 8.0, "potential_payout": 30.77, "potential_profit": 22.77, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:32.108358", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_008", "market": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.67, "estimated_prob": 0.8827578551591637, "stake": 8.0, "potential_payout": 11.94, "potential_profit": 3.94, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:00.470816", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_009", "market": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.21, "estimated_prob": 0.2993808552445522, "stake": 7.02, "potential_payout": 33.43, "potential_profit": 26.41, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:03.508341", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_010", "market": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "news": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:05.147268", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_011", "market": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.83, "estimated_prob": 0.9562717971088787, "stake": 8.0, "potential_payout": 9.64, "potential_profit": 1.64, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:12.117070", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_012", "market": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.09, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 88.89, "potential_profit": 80.89, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:15.601867", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_013", "market": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.82, "estimated_prob": 0.97, "stake": 4.98, "potential_payout": 6.07, "potential_profit": 1.09, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:25.166369", "resolved_at": null, "result": null, "pl": null}], "closed_bets": [], "total_pl": 0};
-const DECISIONS = [{"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 18?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.792802"}, {"approved": false, "market_q": "Will the price of XRP be above $1.40 on March 18?", "price": 0.47, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.792940"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 19?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793089"}, {"approved": false, "market_q": "Will the price of Solana be above $80 on March 17?", "price": 0.93, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793219"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,400 on March 18?", "price": 0.05, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793345"}, {"approved": false, "market_q": "Will the price of Solana be above $130 on March 19?", "price": 0.043, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793488"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793680"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793725"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 20?", "price": 0.049, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.793941"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 20?", "price": 0.14, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.794169"}, {"approved": false, "market_q": "Will the price of Ethereum be between $2,000 and $2,100 on March 19?", "price": 0.27, "reason": "Prefilter: Liquidity $0 < $5k minimum", "timestamp": "2026-03-15T17:17:40.794385"}];
-</script>
 
-<div class="app">
-
-<!-- TOP BAR -->
-<div class="topbar">
+<!-- TOPBAR -->
+<header class="topbar">
   <div class="topbar-left">
-    <div class="logo">POLY<span>FARM</span></div>
-    <div class="badge-live"><div class="dot-live"></div>LIVE</div>
+    <div class="logo">Poly<span>Farm</span></div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
   </div>
-  <div class="topbar-right" id="ts"></div>
-</div>
+  <div class="topbar-right" id="timestamp"></div>
+</header>
 
 <!-- TABS -->
-<div class="tabs">
-  <div class="tab active" data-tab="overview">Overview</div>
-  <div class="tab" data-tab="positions">Positions <span class="tab-badge" id="badge-pos">0</span></div>
-  <div class="tab" data-tab="history">History <span class="tab-badge" id="badge-hist">0</span></div>
-  <div class="tab" data-tab="decisions">Decisions <span class="tab-badge" id="badge-dec">0</span></div>
-  <div class="tab" data-tab="system">System</div>
-</div>
+<nav class="tabs-container">
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="positions">Positions</button>
+    <button class="tab" data-tab="history">History</button>
+    <button class="tab" data-tab="decisions">Decisions Log</button>
+    <button class="tab" data-tab="system">System</button>
+  </div>
+</nav>
 
 <!-- CONTENT -->
-<div class="content">
+<main class="content">
 
-<!-- ═══ OVERVIEW ═══ -->
-<div class="panel active" id="tab-overview">
-  <!-- KPI row -->
-  <div class="grid4" style="margin-bottom:16px">
-    <div class="card">
-      <div class="stat-label">Portfolio Value</div>
-      <div class="stat-value" id="kpi-value">—</div>
-      <div class="stat-sub" id="kpi-value-sub">—</div>
+  <!-- ── TAB: OVERVIEW ── -->
+  <div class="tab-panel active" id="tab-overview">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Portfolio Value</div>
+        <div class="stat-value" id="stat-value">—</div>
+        <div class="stat-sub" id="stat-value-sub">Cash + Open Bets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net P&amp;L</div>
+        <div class="stat-value" id="stat-pnl">—</div>
+        <div class="stat-sub" id="stat-pnl-sub">vs $100 start</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value" id="stat-wr">—</div>
+        <div class="stat-sub" id="stat-wr-sub">Closed bets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Open Positions</div>
+        <div class="stat-value" id="stat-open">—</div>
+        <div class="stat-sub" id="stat-open-sub">Active stakes</div>
+      </div>
     </div>
-    <div class="card">
-      <div class="stat-label">Net P&amp;L</div>
-      <div class="stat-value" id="kpi-pl">—</div>
-      <div class="stat-sub" id="kpi-pl-sub">—</div>
-    </div>
-    <div class="card">
-      <div class="stat-label">Win Rate</div>
-      <div class="stat-value" id="kpi-wr">—</div>
-      <div class="stat-sub" id="kpi-wr-sub">—</div>
-    </div>
-    <div class="card">
-      <div class="stat-label">Open / Cash</div>
-      <div class="stat-value" id="kpi-open">—</div>
-      <div class="stat-sub" id="kpi-open-sub">—</div>
-    </div>
-  </div>
 
-  <!-- Chart row -->
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="card chart-wrap" style="height:260px">
-      <div class="section-hdr"><div class="section-title">Equity Curve</div></div>
-      <canvas id="equityChart" style="height:200px"></canvas>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Equity Curve</div>
+        <div class="chart-wrap"><canvas id="equityChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">P&amp;L Per Bet</div>
+        <div class="chart-wrap"><canvas id="pnlChart"></canvas></div>
+      </div>
     </div>
-    <div class="card chart-wrap" style="height:260px">
-      <div class="section-hdr"><div class="section-title">P&amp;L per Bet</div></div>
-      <canvas id="plChart" style="height:200px"></canvas>
-    </div>
-  </div>
 
-  <!-- Recent activity -->
-  <div class="card">
-    <div class="section-hdr">
+    <div class="activity-card">
       <div class="section-title">Recent Activity</div>
-      <div class="section-sub" id="last-scan-lbl"></div>
-    </div>
-    <div id="recent-activity"></div>
-  </div>
-</div>
-
-<!-- ═══ POSITIONS ═══ -->
-<div class="panel" id="tab-positions">
-  <div class="section-hdr" style="margin-bottom:14px">
-    <div class="section-title">Open Positions</div>
-    <div class="section-sub" id="pos-cash-lbl"></div>
-  </div>
-  <div id="positions-body"></div>
-</div>
-
-<!-- ═══ HISTORY ═══ -->
-<div class="panel" id="tab-history">
-  <div class="section-hdr" style="margin-bottom:14px">
-    <div class="section-title">Closed Bets</div>
-    <div class="section-sub" id="hist-summary"></div>
-  </div>
-  <div class="card" style="overflow:hidden;padding:0">
-    <table class="tbl" id="hist-table">
-      <thead>
-        <tr>
-          <th>Market</th>
-          <th>Position</th>
-          <th>Stake</th>
-          <th>Payout</th>
-          <th>P&amp;L</th>
-          <th>Edge</th>
-          <th>Confidence</th>
-          <th>Result</th>
-          <th>Closed</th>
-        </tr>
-      </thead>
-      <tbody id="hist-body"></tbody>
-    </table>
-    <div class="empty" id="hist-empty" style="display:none">
-      <div class="empty-icon">📭</div>
-      <div class="empty-text">No closed bets yet</div>
+      <div id="activity-feed"></div>
     </div>
   </div>
-</div>
 
-<!-- ═══ DECISIONS ═══ -->
-<div class="panel" id="tab-decisions">
-  <div class="section-hdr" style="margin-bottom:14px">
-    <div class="section-title">Scanner Decisions</div>
-    <div class="section-sub" id="dec-stats"></div>
+  <!-- ── TAB: POSITIONS ── -->
+  <div class="tab-panel" id="tab-positions">
+    <div class="positions-grid" id="positions-grid"></div>
   </div>
-  <!-- Filter bar -->
-  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn" data-filter="approved" onclick="setFilter('approved',this)">Bets Only</button>
-    <button class="filter-btn" data-filter="rejected" onclick="setFilter('rejected',this)">Skips Only</button>
-  </div>
-  <div id="decisions-list"></div>
-</div>
 
-<!-- ═══ SYSTEM ═══ -->
-<div class="panel" id="tab-system">
-  <div class="grid2">
-    <div>
-      <div class="card" style="margin-bottom:12px">
-        <div class="section-hdr"><div class="section-title">Scanner Config</div></div>
-        <div id="sys-config"></div>
-      </div>
-      <div class="card">
-        <div class="section-hdr"><div class="section-title">Portfolio State</div></div>
-        <div id="sys-portfolio"></div>
-      </div>
+  <!-- ── TAB: HISTORY ── -->
+  <div class="tab-panel" id="tab-history">
+    <div class="history-summary" id="history-summary"></div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Market</th>
+            <th>Position</th>
+            <th>Stake</th>
+            <th>Payout</th>
+            <th>P&amp;L</th>
+            <th>Entry</th>
+            <th>Result</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody"></tbody>
+      </table>
     </div>
-    <div>
-      <div class="card" style="margin-bottom:12px">
-        <div class="section-hdr"><div class="section-title">Edge Distribution</div></div>
-        <canvas id="edgeChart" style="height:160px"></canvas>
+  </div>
+
+  <!-- ── TAB: DECISIONS LOG ── -->
+  <div class="tab-panel" id="tab-decisions">
+    <div class="decisions-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="bets">Bets</button>
+      <button class="filter-btn" data-filter="skips">Skips</button>
+    </div>
+    <div class="decisions-list" id="decisions-list"></div>
+  </div>
+
+  <!-- ── TAB: SYSTEM ── -->
+  <div class="tab-panel" id="tab-system">
+    <div class="system-grid">
+      <div>
+        <div class="system-card" style="margin-bottom:12px">
+          <div class="system-card-title">Scanner Config</div>
+          <table class="config-table" id="config-table"></table>
+        </div>
+        <div class="system-card">
+          <div class="system-card-title">Portfolio State</div>
+          <table class="config-table" id="portfolio-state-table"></table>
+        </div>
       </div>
-      <div class="card">
-        <div class="section-hdr"><div class="section-title">Signal Breakdown</div></div>
-        <div id="sys-signals"></div>
+      <div>
+        <div class="system-card" style="margin-bottom:12px">
+          <div class="system-card-title">Edge Distribution</div>
+          <div class="chart-wrap"><canvas id="edgeChart"></canvas></div>
+        </div>
+        <div class="system-card">
+          <div class="system-card-title">Signal Win-Rate</div>
+          <div class="signal-bar-list" id="signal-bars"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-</div><!-- /content -->
-</div><!-- /app -->
-
-<style>
-.filter-btn { background:var(--bg2); border:1px solid var(--border); color:var(--text2); font-size:11px; font-family:var(--sans); padding:5px 12px; border-radius:4px; cursor:pointer; transition:all 0.15s; }
-.filter-btn:hover { border-color:var(--border2); color:var(--text); }
-.filter-btn.active { background:var(--blue-dim); border-color:rgba(88,166,255,0.3); color:var(--blue); }
-</style>
+</main>
 
 <script>
-// ─── Helpers ────────────────────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const fmt2 = n => Number(n).toFixed(2);
-const fmt1 = n => Number(n).toFixed(1);
-const fmtPct = n => (Number(n)*100).toFixed(1)+'%';
-const trunc = (s,n) => s && s.length>n ? s.slice(0,n)+'…' : (s||'—');
-const fmtDate = s => { try { return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){return s||'—';} };
-const plClass = n => Number(n)>=0 ? 'green' : 'red';
-const plSign = n => Number(n)>=0 ? '+' : '';
+// ─── UTILS ───
+function fmt(n, decimals=2) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toFixed(decimals);
+}
+function fmtUSD(n) {
+  if (n == null || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  return (n < 0 ? '-' : '') + '$' + abs.toFixed(2);
+}
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '—';
+  return (n * 100).toFixed(1) + '%';
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  try {
+    const d = new Date(str);
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' });
+  } catch(e) { return str; }
+}
+function timeAgo(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  const now = new Date();
+  const sec = Math.floor((now - d) / 1000);
+  if (sec < 60) return 'just now';
+  if (sec < 3600) return Math.floor(sec/60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec/3600) + 'h ago';
+  return Math.floor(sec/86400) + 'd ago';
+}
+function timeUntil(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  const now = new Date();
+  const sec = Math.floor((d - now) / 1000);
+  if (sec < 0) return 'Expired';
+  if (sec < 3600) return Math.floor(sec/60) + 'm';
+  if (sec < 86400) return Math.floor(sec/3600) + 'h';
+  return Math.floor(sec/86400) + 'd';
+}
+function clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
 
-// ─── Data ───────────────────────────────────────────────────────────────────
-const cash = PORTFOLIO.cash || 0;
-const startCap = PORTFOLIO.starting_capital || 100;
-const openBets = PORTFOLIO.open_bets || [];
-const closedBets = PORTFOLIO.closed_bets || [];
-const totalPL = PORTFOLIO.total_pl || 0;
-const exposure = openBets.reduce((s,b)=>s+(b.stake||0),0);
-const portfolioVal = cash + exposure;
-const wins = closedBets.filter(b=>b.result==='WON').length;
-const losses = closedBets.filter(b=>b.result==='LOST').length;
-const winRate = closedBets.length>0 ? wins/closedBets.length*100 : 0;
-const avgPL = closedBets.length>0 ? closedBets.reduce((s,b)=>s+(b.pl||0),0)/closedBets.length : 0;
-const betsFromDec = DECISIONS.filter(d=>d.approved);
+function pill(text, cls) {
+  return `<span class="pill pill-${cls.toLowerCase()}">${text}</span>`;
+}
 
-// ─── Timestamp ──────────────────────────────────────────────────────────────
-$('ts').textContent = new Date().toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+function confidenceCls(c) {
+  if (!c) return 'low';
+  return c.toLowerCase();
+}
 
-// ─── Tab logic ───────────────────────────────────────────────────────────────
+// ─── TIMESTAMP ───
+function updateTimestamp() {
+  const el = document.getElementById('timestamp');
+  if (!el) return;
+  const d = new Date();
+  el.textContent = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) + ' UTC';
+}
+updateTimestamp();
+setInterval(updateTimestamp, 1000);
+
+// ─── TABS ───
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
-    $('tab-'+tab.dataset.tab).classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
   });
 });
 
-// ─── Badges ─────────────────────────────────────────────────────────────────
-$('badge-pos').textContent = openBets.length;
-$('badge-hist').textContent = closedBets.length;
-$('badge-dec').textContent = DECISIONS.length;
+// ─── COUNTER ANIMATION ───
+function animateCounter(el, target, prefix='', suffix='', decimals=2, duration=600) {
+  const start = performance.now();
+  const update = (now) => {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = eased * target;
+    el.textContent = prefix + Math.abs(val).toFixed(decimals) + suffix;
+    if (t < 1) requestAnimationFrame(update);
+    else el.textContent = prefix + Math.abs(target).toFixed(decimals) + suffix;
+  };
+  requestAnimationFrame(update);
+}
 
-// ═══════════════════════════════════════════════════════
-// TAB 1: OVERVIEW
-// ═══════════════════════════════════════════════════════
-const plPct = ((portfolioVal - startCap)/startCap*100);
-$('kpi-value').innerHTML = `<span class="${plClass(portfolioVal-startCap)}">€${fmt2(portfolioVal)}</span>`;
-$('kpi-value-sub').textContent = `Start: €${fmt2(startCap)} · Exposure: €${fmt2(exposure)}`;
-$('kpi-pl').innerHTML = `<span class="${plClass(totalPL)}">${plSign(totalPL)}€${fmt2(Math.abs(totalPL))}</span>`;
-$('kpi-pl-sub').textContent = `${plSign(plPct)}${fmt1(plPct)}% all-time · avg ${plSign(avgPL)}€${fmt2(Math.abs(avgPL))}/bet`;
-$('kpi-wr').innerHTML = `<span>${fmt1(winRate)}%</span>`;
-$('kpi-wr-sub').textContent = `${wins}W · ${losses}L of ${closedBets.length} closed`;
-$('kpi-open').innerHTML = `<b>${openBets.length}</b> open`;
-$('kpi-open-sub').textContent = `€${fmt2(cash)} cash available`;
+// ─── DERIVED DATA ───
+const P = PORTFOLIO;
+const openBets = P.open_bets || [];
+const closedBets = P.closed_bets || [];
+const totalStaked = openBets.reduce((s, b) => s + (b.stake || 0), 0);
+const portfolioValue = (P.cash || 0) + totalStaked;
+const totalPL = P.total_pl || 0;
+const wins = closedBets.filter(b => b.result === 'WON').length;
+const losses = closedBets.filter(b => b.result === 'LOST').length;
+const winRate = closedBets.length > 0 ? wins / closedBets.length : null;
 
-// Equity chart
-(function(){
-  const labels = ['Start'], vals = [startCap];
-  let run = startCap;
-  [...closedBets].sort((a,b)=>(a.resolved_at||a.placed_at||'').localeCompare(b.resolved_at||b.placed_at||'')).forEach(b=>{
-    run = +(run+(b.pl||0)).toFixed(2);
-    labels.push(fmtDate(b.resolved_at||b.placed_at));
-    vals.push(run);
+// ─── OVERVIEW STATS ───
+(function() {
+  // Portfolio Value
+  const pvEl = document.getElementById('stat-value');
+  pvEl.textContent = '$' + portfolioValue.toFixed(2);
+  pvEl.className = 'stat-value';
+  document.getElementById('stat-value-sub').textContent = `$${fmt(P.cash)} cash + $${fmt(totalStaked)} staked`;
+
+  // P&L
+  const plEl = document.getElementById('stat-pnl');
+  plEl.textContent = (totalPL >= 0 ? '+' : '') + '$' + Math.abs(totalPL).toFixed(2);
+  plEl.className = 'stat-value ' + (totalPL >= 0 ? 'green' : 'red');
+  const pct = (totalPL / (P.starting_capital || 100)) * 100;
+  document.getElementById('stat-pnl-sub').textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '% return';
+
+  // Win Rate
+  const wrEl = document.getElementById('stat-wr');
+  if (winRate !== null) {
+    wrEl.textContent = (winRate * 100).toFixed(0) + '%';
+    wrEl.className = 'stat-value ' + (winRate >= 0.55 ? 'green' : winRate >= 0.4 ? 'yellow' : 'red');
+  } else {
+    wrEl.textContent = '—';
+  }
+  document.getElementById('stat-wr-sub').textContent = `${wins}W / ${losses}L from ${closedBets.length} closed`;
+
+  // Open
+  const openEl = document.getElementById('stat-open');
+  openEl.textContent = openBets.length;
+  document.getElementById('stat-open-sub').textContent = `$${fmt(totalStaked)} at risk`;
+})();
+
+// ─── EQUITY CHART ───
+(function() {
+  const ctx = document.getElementById('equityChart').getContext('2d');
+  let equity = P.starting_capital || 100;
+  const points = [equity];
+  const labels = ['Start'];
+  const sortedClosed = [...closedBets].sort((a,b) => new Date(a.resolved_at||a.placed_at) - new Date(b.resolved_at||b.placed_at));
+  sortedClosed.forEach(b => {
+    equity += (b.pl || 0);
+    points.push(parseFloat(equity.toFixed(2)));
+    labels.push(fmtDate(b.resolved_at || b.placed_at));
   });
-  labels.push('Now'); vals.push(+portfolioVal.toFixed(2));
-  const ctx = $('equityChart').getContext('2d');
-  const grad = ctx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba(88,166,255,0.12)');
-  grad.addColorStop(1,'rgba(88,166,255,0)');
-  new Chart(ctx,{
-    type:'line',
-    data:{ labels, datasets:[{ data:vals, borderColor:'#58a6ff', borderWidth:1.5, backgroundColor:grad, fill:true, tension:0.3, pointRadius:3, pointBackgroundColor:'#58a6ff', pointBorderColor:'#0d1117', pointBorderWidth:1.5, pointHoverRadius:5 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>'€'+c.parsed.y.toFixed(2) }, titleFont:{family:'JetBrains Mono',size:10}, bodyFont:{family:'JetBrains Mono',size:13}, padding:10, cornerRadius:4, displayColors:false }},
-      scales:{ x:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:6}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:8,callback:v=>'€'+v}, border:{display:false} } }
+  points.push(parseFloat(portfolioValue.toFixed(2)));
+  labels.push('Now');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: points,
+        borderColor: '#2563eb',
+        borderWidth: 2,
+        pointRadius: points.map((_, i) => i === 0 || i === points.length-1 ? 4 : 2),
+        pointBackgroundColor: '#2563eb',
+        pointBorderColor: '#2563eb',
+        fill: false,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161616',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#a1a1aa',
+          bodyColor: '#fafafa',
+          bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+          callbacks: {
+            label: ctx => '$' + ctx.raw.toFixed(2)
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#52525b', font: { size: 10 }, maxTicksLimit: 6 },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#52525b', font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => '$'+v },
+          border: { display: false }
+        }
+      }
     }
   });
 })();
 
-// P&L bar chart
-(function(){
-  if(!closedBets.length){ $('plChart').parentElement.innerHTML='<div class="section-hdr"><div class="section-title">P&L per Bet</div></div><div class="empty" style="padding-top:60px"><div class="empty-icon">📊</div><div class="empty-text">No closed bets yet</div></div>'; return; }
-  const labels = closedBets.map(b=>trunc(b.market||'',18));
-  const vals = closedBets.map(b=>b.pl||0);
-  const colors = vals.map(v=>v>=0?'rgba(63,185,80,0.7)':'rgba(248,81,73,0.7)');
-  const ctx = $('plChart').getContext('2d');
-  new Chart(ctx,{
-    type:'bar',
-    data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderRadius:2 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(2)+'€' }, titleFont:{family:'JetBrains Mono',size:9}, bodyFont:{family:'JetBrains Mono',size:13}, padding:10, cornerRadius:4, displayColors:false }},
-      scales:{ x:{ grid:{display:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:4,maxRotation:30}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)',drawBorder:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},padding:8,callback:v=>'€'+v}, border:{display:false} } }
+// ─── P&L BAR CHART ───
+(function() {
+  const ctx = document.getElementById('pnlChart').getContext('2d');
+  const bets = closedBets.slice(-12);
+  if (bets.length === 0) {
+    ctx.canvas.parentElement.innerHTML = '<div class="empty-state" style="padding:40px 0"><div class="empty-icon">📊</div><div class="empty-sub">No closed bets yet</div></div>';
+    return;
+  }
+  const labels = bets.map((b,i) => b.market ? b.market.slice(0,15)+'…' : `Bet ${i+1}`);
+  const data = bets.map(b => b.pl || 0);
+  const colors = data.map(v => v >= 0 ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderRadius: 3, borderSkipped: false }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161616',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#a1a1aa',
+          bodyColor: '#fafafa',
+          bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+          callbacks: {
+            label: ctx => (ctx.raw >= 0 ? '+' : '') + '$' + ctx.raw.toFixed(2)
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#52525b', font: { size: 9 }, maxRotation: 30 },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#52525b', font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: v => '$'+v },
+          border: { display: false }
+        }
+      }
     }
   });
 })();
 
-// Recent activity
-(function(){
-  const all = [...openBets.map(b=>({...b,_type:'open'})), ...closedBets.map(b=>({...b,_type:'closed'})), ...DECISIONS.slice(-10).map(d=>({...d,_type:'decision'}))];
-  all.sort((a,b)=>((b.placed_at||b.timestamp||'') > (a.placed_at||a.timestamp||'') ? 1 : -1));
-  const el = $('recent-activity');
-  if(!all.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No activity yet — scanner is running</div></div>'; return; }
-  el.innerHTML = all.slice(0,8).map(item => {
-    if(item._type==='open') return `<div class="sys-row"><span class="muted">${trunc(item.market||'',55)}</span><span class="pill pill-open">OPEN · €${item.stake}</span></div>`;
-    if(item._type==='closed') { const p=item.pl||0; return `<div class="sys-row"><span class="muted">${trunc(item.market||'',55)}</span><span class="pill ${p>=0?'pill-won':'pill-lost'}">${p>=0?'WON +':'LOST '}€${Math.abs(p).toFixed(2)}</span></div>`; }
-    if(item._type==='decision') return `<div class="sys-row"><span class="dim" style="font-family:var(--mono);font-size:10px">${item.approved?'🎯 BET':'⛔ SKIP'} · ${trunc(item.market_q||item.question||'',50)}</span><span class="dim" style="font-size:10px">${fmtDate(item.timestamp)}</span></div>`;
-    return '';
-  }).join('');
-  const lastDec = DECISIONS.length>0 ? DECISIONS[DECISIONS.length-1] : null;
-  $('last-scan-lbl').textContent = lastDec ? 'Last scan: '+fmtDate(lastDec.timestamp) : 'No scans yet';
+// ─── ACTIVITY FEED ───
+(function() {
+  const feed = document.getElementById('activity-feed');
+  const events = [];
+
+  closedBets.forEach(b => {
+    events.push({
+      type: b.result === 'WON' ? 'won' : 'lost',
+      title: b.market || 'Unknown market',
+      meta: `${b.position} · ${fmtDate(b.resolved_at || b.placed_at)}`,
+      right: (b.pl >= 0 ? '+' : '') + '$' + Math.abs(b.pl || 0).toFixed(2),
+      ts: new Date(b.resolved_at || b.placed_at)
+    });
+  });
+
+  openBets.forEach(b => {
+    events.push({
+      type: 'bet',
+      title: b.market || 'Unknown market',
+      meta: `${b.position} · Placed ${timeAgo(b.placed_at)}`,
+      right: '$' + (b.stake || 0).toFixed(2),
+      ts: new Date(b.placed_at)
+    });
+  });
+
+  const skipDecisions = DECISIONS.filter(d => !d.approved);
+  skipDecisions.forEach(d => {
+    events.push({
+      type: 'skip',
+      title: d.market_q || 'Unknown',
+      meta: `Skipped · ${timeAgo(d.timestamp)}`,
+      right: '',
+      ts: new Date(d.timestamp)
+    });
+  });
+
+  events.sort((a, b) => b.ts - a.ts);
+  const recent = events.slice(0, 8);
+
+  if (recent.length === 0) {
+    feed.innerHTML = '<div class="empty-state" style="padding:32px 0"><div class="empty-icon">📭</div><div class="empty-sub">No activity yet</div></div>';
+    return;
+  }
+
+  const icons = { bet: '⚡', won: '✅', lost: '❌', skip: '⏭' };
+  feed.innerHTML = recent.map(e => `
+    <div class="activity-item">
+      <div class="activity-icon ${e.type}">${icons[e.type]}</div>
+      <div class="activity-body">
+        <div class="activity-title">${e.title}</div>
+        <div class="activity-meta">${e.meta}</div>
+      </div>
+      ${e.right ? `<div class="activity-right">${e.right}</div>` : ''}
+    </div>
+  `).join('');
 })();
 
-// ═══════════════════════════════════════════════════════
-// TAB 2: POSITIONS
-// ═══════════════════════════════════════════════════════
-(function(){
-  $('pos-cash-lbl').textContent = `€${fmt2(cash)} cash · €${fmt2(exposure)} deployed`;
-  const el = $('positions-body');
-  if(!openBets.length){ el.innerHTML='<div class="empty"><div class="empty-icon">💤</div><div class="empty-text">No open positions — scanner is looking for edge</div></div>'; return; }
-  el.innerHTML = openBets.map(b => {
-    const now = Date.now();
-    const expiry = b.end_date ? new Date(b.end_date).getTime() : 0;
-    const hoursLeft = expiry ? ((expiry-now)/3600000).toFixed(1) : '?';
-    const estProb = b.estimated_prob||0;
-    const edge = (estProb - b.entry_price)*100;
-    return `<div class="card" style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div>
-          <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:500">${b.slug||b.market_slug
-            ? `<a href="https://polymarket.com/event/${b.slug||b.market_slug}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.15)" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.15)'">${b.market||'—'} <span style="font-size:9px;color:var(--text3)">↗</span></a>`
-            : b.market||'—'
-          }</div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position}</span>
-            <span class="pill pill-open">OPEN</span>
-            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">expires in ${hoursLeft}h</span>
+// ─── POSITIONS ───
+(function() {
+  const grid = document.getElementById('positions-grid');
+  if (openBets.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🏦</div>
+      <div class="empty-title">No open positions</div>
+      <div class="empty-sub">The scanner will place bets when high-edge opportunities are found</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = openBets.map(b => {
+    const slug = b.slug || b.market_slug;
+    const link = slug ? `https://polymarket.com/event/${slug}` : null;
+    const edge = b.estimated_prob && b.entry_price ? (b.estimated_prob - b.entry_price) : null;
+    const expiry = timeUntil(b.end_date);
+    return `
+      <div class="position-card">
+        <div class="position-header">
+          <div class="position-market">
+            ${link
+              ? `<a href="${link}" target="_blank" rel="noopener">${b.market || 'Unknown'}<span class="ext-link">↗</span></a>`
+              : (b.market || 'Unknown')
+            }
+          </div>
+          <div class="position-pills">
+            ${pill(b.position || '?', b.position === 'YES' ? 'yes' : 'no')}
+            ${b.confidence ? pill(b.confidence, confidenceCls(b.confidence)) : ''}
           </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--mono);font-size:15px;font-weight:600">€${fmt2(b.stake)}</div>
-          <div style="font-size:10px;color:var(--text3)">→ €${fmt2(b.potential_payout||0)} payout</div>
+        <div class="position-stats">
+          <div>
+            <div class="pos-stat-label">Stake</div>
+            <div class="pos-stat-value">$${fmt(b.stake)}</div>
+          </div>
+          <div>
+            <div class="pos-stat-label">Entry</div>
+            <div class="pos-stat-value">${fmtPct(b.entry_price)}</div>
+          </div>
+          <div>
+            <div class="pos-stat-label">Model</div>
+            <div class="pos-stat-value">${fmtPct(b.estimated_prob)}</div>
+          </div>
+          <div>
+            <div class="pos-stat-label">Edge</div>
+            <div class="pos-stat-value" style="color:${edge > 0 ? 'var(--green)' : 'var(--red)'}">
+              ${edge !== null ? (edge > 0 ? '+' : '') + (edge * 100).toFixed(1) + 'pp' : '—'}
+            </div>
+          </div>
+          <div>
+            <div class="pos-stat-label">Payout</div>
+            <div class="pos-stat-value">$${fmt(b.potential_payout)}</div>
+          </div>
+          <div>
+            <div class="pos-stat-label">Expires</div>
+            <div class="pos-stat-value">${expiry}</div>
+          </div>
         </div>
+        ${b.reasoning ? `<div class="position-reasoning">${b.reasoning}</div>` : ''}
       </div>
-      <div class="grid3" style="gap:8px">
-        <div class="card-sm"><div class="stat-label">Entry Price</div><div class="stat-value" style="font-size:15px">${(b.entry_price*100).toFixed(0)}¢</div></div>
-        <div class="card-sm"><div class="stat-label">Model Prob</div><div class="stat-value blue" style="font-size:15px">${(estProb*100).toFixed(0)}%</div></div>
-        <div class="card-sm"><div class="stat-label">Edge</div><div class="stat-value ${edge>=0?'green':'red'}" style="font-size:15px">${edge>=0?'+':''}${fmt1(edge)}%</div></div>
-      </div>
-      ${b.reasoning ? `<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:4px;font-size:11px;color:var(--text3);line-height:1.5">${b.reasoning.slice(0,200)}${b.reasoning.length>200?'…':''}</div>` : ''}
-    </div>`;
+    `;
   }).join('');
 })();
 
-// ═══════════════════════════════════════════════════════
-// TAB 3: HISTORY
-// ═══════════════════════════════════════════════════════
-(function(){
-  const totalReturn = closedBets.reduce((s,b)=>s+(b.pl||0),0);
-  $('hist-summary').textContent = `${closedBets.length} bets · ${wins}W ${losses}L · total ${plSign(totalReturn)}€${fmt2(Math.abs(totalReturn))}`;
-  if(!closedBets.length){ $('hist-empty').style.display='block'; $('hist-table').style.display='none'; return; }
-  const tbody = $('hist-body');
-  tbody.innerHTML = [...closedBets].reverse().map(b => {
-    const pl = b.pl||0;
-    const estProb = b.estimated_prob||0;
-    const edge = ((estProb - b.entry_price)*100);
+// ─── HISTORY ───
+(function() {
+  const summary = document.getElementById('history-summary');
+  const tbody = document.getElementById('history-tbody');
+  const totalReturn = closedBets.reduce((s, b) => s + (b.pl || 0), 0);
+  summary.innerHTML = `
+    <div class="summary-item"><div class="summary-label">Total Bets</div><div class="summary-value">${closedBets.length}</div></div>
+    <div class="summary-item"><div class="summary-label">Wins</div><div class="summary-value green">${wins}</div></div>
+    <div class="summary-item"><div class="summary-label">Losses</div><div class="summary-value red">${losses}</div></div>
+    <div class="summary-item"><div class="summary-label">Win Rate</div><div class="summary-value ${winRate >= 0.5 ? 'green' : 'red'}">${winRate !== null ? (winRate*100).toFixed(0)+'%' : '—'}</div></div>
+    <div class="summary-item"><div class="summary-label">Total Return</div><div class="summary-value ${totalReturn >= 0 ? 'green' : 'red'}">${(totalReturn >= 0 ? '+' : '') + '$' + Math.abs(totalReturn).toFixed(2)}</div></div>
+  `;
+
+  if (closedBets.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No closed bets yet</td></tr>';
+    return;
+  }
+
+  const sorted = [...closedBets].sort((a,b) => new Date(b.resolved_at||b.placed_at) - new Date(a.resolved_at||a.placed_at));
+  tbody.innerHTML = sorted.map(b => {
+    const slug = b.slug || b.market_slug;
+    const link = slug ? `https://polymarket.com/event/${slug}` : null;
+    const edge = b.estimated_prob && b.entry_price ? b.estimated_prob - b.entry_price : null;
+    const pl = b.pl || 0;
     return `<tr>
-      <td class="main">${b.slug||b.market_slug
-        ? `<a href="https://polymarket.com/event/${b.slug||b.market_slug}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.1)" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.1)'">${trunc(b.market||'',50)} <span style="font-size:9px;color:var(--text3)">↗</span></a>`
-        : trunc(b.market||'',50)
-      }</td>
-      <td><span class="pill ${b.position==='YES'?'pill-yes':'pill-no'}">${b.position||'—'}</span></td>
-      <td>€${fmt2(b.stake||0)}</td>
-      <td>€${fmt2(b.potential_payout||0)}</td>
-      <td class="${plClass(pl)}" style="font-weight:600">${plSign(pl)}€${fmt2(Math.abs(pl))}</td>
-      <td class="${edge>=0?'green':'red'}">${edge>=0?'+':''}${fmt1(edge)}%</td>
-      <td><span style="font-size:10px;color:var(--text3)">${b.confidence||'—'}</span></td>
-      <td><span class="pill ${b.result==='WON'?'pill-won':'pill-lost'}">${b.result||'—'}</span></td>
-      <td style="color:var(--text3)">${fmtDate(b.resolved_at||b.placed_at)}</td>
+      <td class="td-link">${link ? `<a href="${link}" target="_blank" rel="noopener">${b.market || '—'}<span class="ext-link">↗</span></a>` : (b.market || '—')}</td>
+      <td>${pill(b.position || '?', b.position === 'YES' ? 'yes' : 'no')}</td>
+      <td class="td-mono">$${fmt(b.stake)}</td>
+      <td class="td-mono">$${fmt(b.potential_payout)}</td>
+      <td class="td-mono" style="color:${pl >= 0 ? 'var(--green)' : 'var(--red)'}">${(pl >= 0 ? '+' : '')}$${Math.abs(pl).toFixed(2)}</td>
+      <td class="td-mono">${fmtPct(b.entry_price)}</td>
+      <td>${pill(b.result || '?', b.result === 'WON' ? 'won' : 'lost')}</td>
+      <td style="color:var(--text3);font-size:12px">${fmtDate(b.resolved_at || b.placed_at)}</td>
     </tr>`;
   }).join('');
 })();
 
-// ═══════════════════════════════════════════════════════
-// TAB 4: DECISIONS
-// ═══════════════════════════════════════════════════════
-let currentFilter = 'all';
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderDecisions();
-}
-function renderDecisions() {
-  const bets = DECISIONS.filter(d=>d.approved).length;
-  const skips = DECISIONS.filter(d=>!d.approved).length;
-  $('dec-stats').textContent = `${DECISIONS.length} total · ${bets} bets · ${skips} skips`;
-  const filtered = currentFilter==='all' ? DECISIONS : currentFilter==='approved' ? DECISIONS.filter(d=>d.approved) : DECISIONS.filter(d=>!d.approved);
-  const el = $('decisions-list');
-  if(!filtered.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No decisions yet</div></div>'; return; }
-  el.innerHTML = [...filtered].reverse().map((d,i) => {
-    const approved = d.approved;
-    const edge = d.edge!=null ? (d.edge*100).toFixed(1)+'%' : '—';
-    const conv = d.conviction!=null ? d.conviction : 0;
-    const posterior = d.posterior!=null ? (d.posterior*100).toFixed(0)+'%' : '—';
-    const market = (d.market_price||0)*100;
-    const bayes = d.bayes_updates||[];
-    const signals = d.signal_breakdown||{};
+// ─── DECISIONS LOG ───
+(function() {
+  let currentFilter = 'all';
+  const list = document.getElementById('decisions-list');
 
-    return `<div class="dec-card ${approved?'approved':'rejected'}" onclick="toggleDec(this)">
-      <div class="dec-hdr">
-        <span class="pill ${approved?'pill-bet':'pill-skip'}">${approved?'BET':'SKIP'}</span>
-        ${approved?`<span class="pill pill-yes">${d.direction||'YES'}</span>`:''}
-        <span style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:auto">${fmtDate(d.timestamp)}</span>
-      </div>
-      <div class="dec-question">${d.polymarket_url
-        ? `<a href="${d.polymarket_url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.15);transition:border-color 0.15s" onmouseover="this.style.borderBottomColor='var(--blue)'" onmouseout="this.style.borderBottomColor='rgba(255,255,255,0.15)'">${d.market_q||d.question||'—'} <span style="font-size:9px;color:var(--text3);margin-left:4px">↗</span></a>`
-        : d.market_q||d.question||'—'
-      }</div>
-      <div style="display:flex;gap:16px;margin-top:6px">
-        <span class="dec-meta">Market: <b style="color:var(--text2)">${market.toFixed(0)}¢</b></span>
-        <span class="dec-meta">Model: <b style="color:var(--blue)">${posterior}</b></span>
-        <span class="dec-meta">Edge: <b class="${d.edge>=0.06?'green':'red'}">${edge}</b></span>
-        <span class="dec-meta">Conviction: <b style="color:var(--text2)">${conv}/100</b></span>
-        ${d.reason?`<span class="dec-meta" style="color:var(--red)">Reason: ${trunc(d.reason,40)}</span>`:''}
-      </div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(conv*10,100)}%;background:${approved?'var(--blue)':'var(--bg3)'}"></div></div>
-      <div class="dec-body">
-        ${bayes.length ? `<div style="margin-bottom:10px"><div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Bayesian Updates</div>${bayes.map(u=>`<div class="dec-signal-row"><span class="signal-name">${u}</span></div>`).join('')}</div>`:''}
-        ${Object.keys(signals).length ? `<div><div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Signal Breakdown</div>${Object.entries(signals).map(([k,v])=>`<div class="dec-signal-row"><span class="signal-name">${k}</span><span class="signal-val ${String(v).includes('✅')?'signal-pos':String(v).includes('❌')?'signal-neg':'signal-neu'}">${v}</span></div>`).join('')}</div>`:''}
-        ${d.reasoning ? `<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:4px;font-size:11px;color:var(--text3);line-height:1.5">${d.reasoning}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-renderDecisions();
-window.toggleDec = function(el){ el.querySelector('.dec-body').classList.toggle('open'); };
-
-// ═══════════════════════════════════════════════════════
-// TAB 5: SYSTEM
-// ═══════════════════════════════════════════════════════
-(function(){
-  const config = [
-    ['Model','Claude Opus 4 (max)'],
-    ['Kelly Fraction','50% (half Kelly)'],
-    ['Min Edge','6%'],
-    ['Min Conviction','35/100'],
-    ['Max Exposure','60% of portfolio'],
-    ['Scan Interval','5 min'],
-    ['Market Window','7 days'],
-    ['Min Liquidity','$5,000'],
-    ['Signal Sources','Binance, OKX, Bybit, CLOB, CoinGecko, DDG, RSS'],
-    ['Parallel Workers','10 threads'],
-  ];
-  $('sys-config').innerHTML = config.map(([k,v])=>`<div class="sys-row"><span class="sys-key">${k}</span><span class="sys-val blue">${v}</span></div>`).join('');
-
-  $('sys-portfolio').innerHTML = [
-    ['Starting Capital',`€${fmt2(startCap)}`],
-    ['Current Cash',`€${fmt2(cash)}`],
-    ['Deployed',`€${fmt2(exposure)}`],
-    ['Portfolio Value',`€${fmt2(portfolioVal)}`],
-    ['Net P&L',`${plSign(totalPL)}€${fmt2(Math.abs(totalPL))}`],
-    ['Return',`${plSign(plPct)}${fmt1(plPct)}%`],
-    ['Bets Placed',`${closedBets.length+openBets.length}`],
-    ['Win Rate',`${fmt1(winRate)}%`],
-  ].map(([k,v])=>`<div class="sys-row"><span class="sys-key">${k}</span><span class="sys-val">${v}</span></div>`).join('');
-
-  // Edge distribution chart
-  const edges = DECISIONS.filter(d=>d.edge!=null).map(d=>d.edge*100);
-  if(edges.length){
-    const buckets = Array(10).fill(0);
-    const labels = [];
-    for(let i=0;i<10;i++){ labels.push(`${i*5}-${(i+1)*5}%`); }
-    edges.forEach(e=>{ const b=Math.min(Math.floor(e/5),9); if(b>=0)buckets[b]++; });
-    const ctx = $('edgeChart').getContext('2d');
-    new Chart(ctx,{
-      type:'bar',
-      data:{ labels, datasets:[{ data:buckets, backgroundColor:'rgba(88,166,255,0.4)', borderColor:'rgba(88,166,255,0.7)', borderWidth:1, borderRadius:2 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1c2128', borderColor:'rgba(88,166,255,0.2)', borderWidth:1, callbacks:{ label:c=>c.parsed.y+' markets' }, titleFont:{family:'JetBrains Mono',size:9}, bodyFont:{family:'JetBrains Mono',size:12}, padding:8, cornerRadius:3, displayColors:false }},
-        scales:{ x:{ grid:{display:false}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9}}, border:{display:false} }, y:{ grid:{color:'rgba(255,255,255,0.03)'}, ticks:{color:'#484f58',font:{family:'JetBrains Mono',size:9},callback:v=>v}, border:{display:false} } }
-      }
-    });
-  } else {
-    $('edgeChart').parentElement.innerHTML = '<div class="section-hdr"><div class="section-title">Edge Distribution</div></div><div class="empty" style="padding-top:30px"><div class="empty-icon">📊</div><div class="empty-text">No data yet</div></div>';
+  function getConvictionColor(conv) {
+    if (conv >= 70) return 'var(--green)';
+    if (conv >= 50) return 'var(--yellow)';
+    return 'var(--red)';
   }
 
-  // Signal breakdown summary
-  const sigCounts = {};
-  DECISIONS.forEach(d=>{ if(d.signal_breakdown){ Object.entries(d.signal_breakdown).forEach(([k,v])=>{ if(!sigCounts[k]) sigCounts[k]={pos:0,neg:0,neu:0}; const vs=String(v); if(vs.includes('✅'))sigCounts[k].pos++; else if(vs.includes('❌'))sigCounts[k].neg++; else sigCounts[k].neu++; }); }});
-  const el=$('sys-signals');
-  if(!Object.keys(sigCounts).length){ el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-text">No signal data yet</div></div>'; return; }
-  el.innerHTML = Object.entries(sigCounts).map(([k,v])=>{
-    const total=v.pos+v.neg+v.neu||1;
-    const pct=Math.round(v.pos/total*100);
-    return `<div class="sys-row"><span class="sys-key">${k}</span><span style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">${pct}% pos</span><div style="width:60px;height:3px;background:var(--bg3);border-radius:2px"><div style="width:${pct}%;height:100%;background:var(--blue);border-radius:2px"></div></div></span></div>`;
-  }).join('');
+  function renderDecisions() {
+    let filtered = [...DECISIONS].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    if (currentFilter === 'bets') filtered = filtered.filter(d => d.approved);
+    if (currentFilter === 'skips') filtered = filtered.filter(d => !d.approved);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No decisions found</div>
+        <div class="empty-sub">Scanner decisions will appear here</div>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map((d, i) => {
+      const isBet = d.approved;
+      const verdict = isBet ? 'BET' : 'SKIP';
+      const verdictCls = isBet ? 'bet' : 'skip';
+      const dirCls = d.direction === 'YES' ? 'yes' : 'no';
+      const edge = d.edge || 0;
+      const conv = d.conviction || 0;
+      const convColor = getConvictionColor(conv);
+
+      const marketName = d.market_q || 'Unknown market';
+      const marketEl = d.polymarket_url
+        ? `<a href="${d.polymarket_url}" target="_blank" rel="noopener">${marketName}<span class="ext-link">↗</span></a>`
+        : marketName;
+
+      const bayes = (d.bayes_updates || []).map(u => `<li class="bayes-item">${u}</li>`).join('');
+      const signals = d.signal_breakdown
+        ? Object.entries(d.signal_breakdown).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')
+        : '';
+
+      return `
+        <div class="decision-card" data-idx="${i}">
+          <div class="decision-header">
+            <div class="decision-pills">
+              ${pill(verdict, verdictCls)}
+              ${d.direction ? pill(d.direction, dirCls) : ''}
+            </div>
+            <div class="decision-market">
+              <div class="decision-market-name">${marketEl}</div>
+            </div>
+            <div class="decision-meta">
+              <div class="decision-meta-item">
+                <div class="decision-meta-label">Price</div>
+                <div class="decision-meta-value">${fmtPct(d.price)}</div>
+              </div>
+              <div class="decision-meta-item">
+                <div class="decision-meta-label">Model</div>
+                <div class="decision-meta-value">${fmtPct(d.posterior)}</div>
+              </div>
+              <div class="decision-meta-item">
+                <div class="decision-meta-label">Edge</div>
+                <div class="decision-meta-value" style="color:${edge > 0 ? 'var(--green)' : 'var(--text2)'}">${(edge*100).toFixed(1)}pp</div>
+              </div>
+              ${isBet ? `<div class="decision-meta-item"><div class="decision-meta-label">Stake</div><div class="decision-meta-value">$${fmt(d.stake)}</div></div>` : ''}
+            </div>
+            <div class="decision-timestamp">${timeAgo(d.timestamp)}</div>
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </div>
+          <div class="conviction-bar-wrap">
+            <div class="conviction-bar-track">
+              <div class="conviction-bar-fill" style="width:${clamp(conv,0,100)}%;background:${convColor}"></div>
+            </div>
+          </div>
+          <div class="decision-expanded">
+            <div class="expanded-grid">
+              ${bayes ? `
+              <div>
+                <div class="expanded-section-title">Bayesian Updates</div>
+                <ul class="bayes-list">${bayes}</ul>
+              </div>` : '<div></div>'}
+              ${signals ? `
+              <div>
+                <div class="expanded-section-title">Signal Breakdown</div>
+                <table class="signal-table">${signals}</table>
+              </div>` : '<div></div>'}
+              <div class="reasoning-block">
+                ${d.key_signal ? `<div class="key-signal-badge">🔑 ${d.key_signal}</div>` : ''}
+                <div class="expanded-section-title">Reasoning</div>
+                <div class="reasoning-text">${d.reasoning || d.reason || 'No reasoning provided'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // click to expand
+    list.querySelectorAll('.decision-card').forEach(card => {
+      card.querySelector('.decision-header').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+      });
+    });
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderDecisions();
+    });
+  });
+
+  renderDecisions();
+})();
+
+// ─── SYSTEM TAB ───
+(function() {
+  // Config table
+  const configData = [
+    ['Model', 'Bayesian + Kelly'],
+    ['Min Edge', '5pp'],
+    ['Kelly Fraction', '0.25×'],
+    ['Max Stake', '$20'],
+    ['Min Stake', '$2'],
+    ['Markets/Scan', DECISIONS.length || '—'],
+    ['Scan Interval', '30 min'],
+    ['Strategy', 'Paper trading'],
+  ];
+  document.getElementById('config-table').innerHTML = configData.map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  // Portfolio state table
+  const stateData = [
+    ['Starting Capital', '$' + fmt(P.starting_capital)],
+    ['Cash Available', '$' + fmt(P.cash)],
+    ['Total Staked', '$' + fmt(totalStaked)],
+    ['Portfolio Value', '$' + fmt(portfolioValue)],
+    ['Net P&L', (totalPL >= 0 ? '+' : '') + '$' + Math.abs(totalPL).toFixed(2)],
+    ['Open Bets', openBets.length],
+    ['Closed Bets', closedBets.length],
+    ['Win Rate', winRate !== null ? (winRate*100).toFixed(0)+'%' : '—'],
+  ];
+  document.getElementById('portfolio-state-table').innerHTML = stateData.map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  // Edge distribution histogram
+  const edges = DECISIONS.filter(d => d.edge != null).map(d => d.edge * 100);
+  const edgeCtx = document.getElementById('edgeChart').getContext('2d');
+  if (edges.length === 0) {
+    edgeCtx.canvas.parentElement.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">No edge data</div>';
+  } else {
+    const bins = [-20,-15,-10,-5,0,5,10,15,20,25,30];
+    const counts = new Array(bins.length-1).fill(0);
+    edges.forEach(e => {
+      for (let i = 0; i < bins.length-1; i++) {
+        if (e >= bins[i] && e < bins[i+1]) { counts[i]++; break; }
+      }
+    });
+    const binLabels = bins.slice(0,-1).map((b,i) => `${b}–${bins[i+1]}pp`);
+    const barColors = bins.slice(0,-1).map(b => b >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+
+    new Chart(edgeCtx, {
+      type: 'bar',
+      data: { labels: binLabels, datasets: [{ data: counts, backgroundColor: barColors, borderRadius: 3, borderSkipped: false }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#161616',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            titleColor: '#a1a1aa',
+            bodyColor: '#fafafa',
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#52525b', font: { size: 9 }, maxRotation: 30 }, border: { display: false } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#52525b', font: { size: 10 }, stepSize: 1 }, border: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Signal win-rate bars
+  const signalStats = {};
+  closedBets.forEach(b => {
+    // check if this bet has a matching decision
+    const dec = DECISIONS.find(d => d.market_id === b.market_id || d.market_slug === b.slug);
+    if (dec && dec.signal_breakdown) {
+      Object.entries(dec.signal_breakdown).forEach(([sig, val]) => {
+        if (!signalStats[sig]) signalStats[sig] = { wins: 0, total: 0 };
+        signalStats[sig].total++;
+        if (b.result === 'WON') signalStats[sig].wins++;
+      });
+    }
+  });
+
+  const signalBars = document.getElementById('signal-bars');
+  const sigEntries = Object.entries(signalStats);
+  if (sigEntries.length === 0) {
+    // fallback: show signal agreement distribution from DECISIONS
+    const approved = DECISIONS.filter(d => d.approved && d.signal_agreement != null);
+    if (approved.length > 0) {
+      const sigs = ['CVD', 'OrderBook', 'Math', 'Funding', 'Momentum'];
+      const sigCounts = {};
+      approved.forEach(d => {
+        if (d.signal_breakdown) {
+          Object.keys(d.signal_breakdown).forEach(k => {
+            sigCounts[k] = (sigCounts[k] || 0) + 1;
+          });
+        }
+      });
+      const maxCount = Math.max(...Object.values(sigCounts), 1);
+      signalBars.innerHTML = Object.entries(sigCounts).map(([k,v]) => `
+        <div class="signal-bar-item">
+          <div class="signal-bar-label"><span>${k}</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3)">${v} uses</span></div>
+          <div class="signal-bar-track"><div class="signal-bar-fill" style="width:${(v/maxCount*100).toFixed(0)}%"></div></div>
+        </div>
+      `).join('');
+    } else {
+      signalBars.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">Insufficient data</div>';
+    }
+  } else {
+    const maxWR = 1;
+    signalBars.innerHTML = sigEntries.map(([sig, s]) => {
+      const wr = s.total > 0 ? s.wins / s.total : 0;
+      return `
+        <div class="signal-bar-item">
+          <div class="signal-bar-label"><span>${sig}</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3)">${(wr*100).toFixed(0)}% WR (${s.wins}/${s.total})</span></div>
+          <div class="signal-bar-track"><div class="signal-bar-fill" style="width:${(wr*100).toFixed(0)}%;background:${wr >= 0.5 ? 'var(--green)' : 'var(--red)'}"></div></div>
+        </div>
+      `;
+    }).join('');
+  }
 })();
 </script>
 </body>
