@@ -471,7 +471,7 @@ const trunc = (s,n) => s && s.length>n ? s.slice(0,n)+'…' : (s||'');
 const sign = n => +n >= 0 ? '+' : '';
 const clr = n => +n >= 0 ? 'g' : 'r';
 const fmtDate = s => { try { const d=new Date(s); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}); } catch(e) { return s||'—'; } };
-const pmUrl = (slug, id) => slug ? `https://polymarket.com/event/${slug}` : id ? `https://polymarket.com/markets` : null;
+const pmUrl = (slug, id) => slug ? `https://polymarket.com/market/${slug}` : null;
 
 function timeLeft(endDate) {
   if (!endDate) return { label:'—', color:'var(--text3)' };
