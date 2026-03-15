@@ -2,228 +2,621 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PolyFarm Dashboard</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        bg: '#0a0a0a',
-        surface: '#111111',
-        accent: '#00ff88',
-        accent2: '#3b82f6',
-        danger: '#ef4444',
-        warning: '#f59e0b',
-        success: '#10b981',
-        muted: '#6b7280',
-      }
-    }
-  }
-}
-</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PolyFarm · Live Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  body { background: #0a0a0a; color: #e5e5e5; font-family: 'Inter', system-ui, sans-serif; }
-  ::-webkit-scrollbar { width: 6px; } 
-  ::-webkit-scrollbar-track { background: #111111; }
-  ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 3px; }
-  .card { background: #111111; border: 1px solid #1f1f1f; border-radius: 12px; }
-  .accent { color: #00ff88; }
-  .badge-green { background: rgba(16,185,129,0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
-  .badge-red { background: rgba(239,68,68,0.15); color: #ef4444; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
-  .badge-yellow { background: rgba(245,158,11,0.15); color: #f59e0b; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
-  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
-  
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#0f0f0f;color:#d1d5db;min-height:100vh;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f0f0f;--surface:#111111;--panel:#161616;--panel2:#1a1a1a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
+  --text:#f1f5f9;--muted:#64748b;--dim:#374151;
+  --accent:#00ff88;--accent2:#00cc6a;
+  --red:#ef4444;--yellow:#eab308;--blue:#3b82f6;--purple:#8b5cf6;
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ─ Header ─ */
+.hdr{
+  position:sticky;top:0;z-index:200;
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(15,15,15,0.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  gap:16px;
+}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,#00ff88,#00cc6a);
+  border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;color:#0f0f0f;
+  box-shadow:0 0 20px rgba(0,255,136,0.35);
+  flex-shrink:0;
+}
+.logo-text{display:flex;flex-direction:column;line-height:1}
+.logo-name{font-size:13px;font-weight:800;letter-spacing:3px;color:var(--text)}
+.logo-sub{font-size:9px;letter-spacing:1.5px;color:var(--accent);font-weight:600;text-transform:uppercase}
+.hdr-pills{display:flex;gap:6px}
+.pill{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  padding:5px 12px;border-radius:7px;
+  font-size:11px;font-weight:600;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.pill .pv{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+.hdr-clock{
+  font-size:11px;font-weight:600;color:var(--muted);
+  font-variant-numeric:tabular-nums;
+  position:absolute;left:50%;transform:translateX(-50%);
+  pointer-events:none;
+}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.live-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;box-shadow:0 0 8px var(--accent)}
+  50%{opacity:.3;box-shadow:0 0 3px var(--accent)}
+}
+.pl-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;
+  background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);
+  font-size:12px;font-weight:800;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ─ Stat cards ─ */
+.kpi-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:12px;padding:20px 24px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.kpi{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px 20px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+}
+.kpi:hover{border-color:rgba(0,255,136,0.2);box-shadow:0 0 20px rgba(0,255,136,0.05)}
+.kpi::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.4;
+}
+.kpi-icon{
+  position:absolute;top:16px;right:16px;
+  font-size:18px;opacity:0.15;
+}
+.kpi-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+.kpi-value{font-size:26px;font-weight:800;letter-spacing:-1.5px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px;font-weight:500}
+.green{color:var(--accent)}
+.red{color:var(--red)}
+.white{color:var(--text)}
+
+/* ─ Main grid ─ */
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:0;
+  min-height:calc(100vh - 58px - 88px);
+}
+.col-left{padding:20px 24px;display:flex;flex-direction:column;gap:20px;border-right:1px solid var(--border)}
+.col-right{display:flex;flex-direction:column;background:var(--surface);}
+
+/* ─ Sections ─ */
+.section{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.sec-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sec-pill{
+  background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.15);
+  color:var(--accent);font-size:10px;font-weight:800;
+  padding:2px 8px;border-radius:4px;
+}
+.sec-hint{font-size:10px;color:var(--dim);font-weight:500}
+
+/* ─ Chart ─ */
+.chart-wrap{padding:16px;height:240px;position:relative}
+
+/* ─ Map ─ */
+.map-wrap{height:280px;position:relative}
+#market-map{width:100%;height:100%;}
+.leaflet-container{background:#0a0a0a!important}
+.leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(0.75) saturate(0.6)}
+.leaflet-popup-content-wrapper{background:#1a1a1a!important;border:1px solid rgba(255,255,255,0.1)!important;color:#d1d5db!important;border-radius:8px!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+.leaflet-popup-tip{background:#1a1a1a!important}
+.leaflet-control-zoom a{background:#1a1a1a!important;color:#d1d5db!important;border-color:rgba(255,255,255,0.1)!important}
+.leaflet-attribution{display:none}
+
+/* ─ Positions table ─ */
+.table-wrap{overflow-x:auto;max-height:350px;overflow-y:auto}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{
+  padding:10px 12px;text-align:left;
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+  border-bottom:1px solid var(--border);background:var(--panel);
+  cursor:pointer;white-space:nowrap;position:sticky;top:0;z-index:1;
+}
+.data-table th:hover{color:var(--accent)}
+.data-table td{padding:10px 12px;font-size:11px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.data-table tr:hover td{background:rgba(255,255,255,0.02)}
+.search-wrap{padding:12px 16px;border-bottom:1px solid var(--border)}
+.search-inp{
+  width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.search-inp:focus{border-color:rgba(0,255,136,0.3)}
+.search-inp::placeholder{color:var(--dim)}
+
+/* ─ Right panel ─ */
+.panel-hdr{
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.live-txt{display:flex;align-items:center;gap:4px;font-size:9px;font-weight:800;color:var(--accent);letter-spacing:1px}
+.live-txt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+
+.activity-scroll{flex:1;overflow-y:auto;padding:4px 0}
+.scanner-bar{
+  padding:12px 18px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:rgba(0,0,0,0.3);flex-shrink:0;
+}
+.scanner-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.scanner-label{font-size:11px;font-weight:600}
+.scanner-time{font-size:10px;color:var(--muted);margin-left:auto}
+
+/* ─ Footer ─ */
+footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;border-top:1px solid var(--border);
+  font-size:10px;color:var(--dim);background:var(--surface);
+  flex-wrap:wrap;gap:6px;
+}
+.footer-l{display:flex;align-items:center;gap:12px}
+.footer-brand{font-weight:900;color:var(--accent);letter-spacing:1px;font-size:11px}
+.footer-tag{background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px}
+.gh-link{color:var(--accent);font-weight:600;text-decoration:none;font-size:10px}
+.gh-link:hover{text-decoration:underline}
+
+/* ─ Responsive ─ */
+@media(max-width:1100px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .main-grid{grid-template-columns:1fr}
+  .col-right{border-top:1px solid var(--border)}
+}
+@media(max-width:640px){
+  .hdr-clock,.hdr-pills{display:none}
+  .kpi-value{font-size:20px}
+  .map-wrap{height:200px}
+}
 </style>
 </head>
 <body>
 
-
-<nav class="flex items-center justify-between px-6 py-4 border-b border-border bg-surface sticky top-0 z-50">
-  <div>
-    <h1 class="text-xl font-bold accent">PolyFarm</h1>
-    <p class="text-xs text-muted">Prediction Market Trading</p>
-  </div>
-  <div class="flex items-center gap-4"><span class="text-xs text-muted">Live</span><span id="clock" class="text-sm text-muted font-mono"></span><span class="badge-green">● Running</span></div>
-</nav>
-
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
-  
-<div class="card p-5 flex flex-col gap-2">
-  <div class="flex items-center justify-between">
-    <span class="text-muted text-sm">Portfolio Value</span>
-    <i data-lucide="trending-up" class="w-4 h-4 text-muted"></i>
-  </div>
-  <div class="text-2xl font-bold accent">€81.29</div>
-  <div class="flex items-center gap-2 text-sm text-muted">
-    <span class="badge-red">↓ 18.7%</span>
-    
-  </div>
-</div>
-  
-<div class="card p-5 flex flex-col gap-2">
-  <div class="flex items-center justify-between">
-    <span class="text-muted text-sm">Cash Available</span>
-    <i data-lucide="wallet" class="w-4 h-4 text-muted"></i>
-  </div>
-  <div class="text-2xl font-bold accent">€78.60</div>
-  <div class="flex items-center gap-2 text-sm text-muted">
-    
-    <span>ready to deploy</span>
-  </div>
-</div>
-  
-<div class="card p-5 flex flex-col gap-2">
-  <div class="flex items-center justify-between">
-    <span class="text-muted text-sm">Open Positions</span>
-    <i data-lucide="activity" class="w-4 h-4 text-muted"></i>
-  </div>
-  <div class="text-2xl font-bold accent">1</div>
-  <div class="flex items-center gap-2 text-sm text-muted">
-    
-    
-  </div>
-</div>
-  
-<div class="card p-5 flex flex-col gap-2">
-  <div class="flex items-center justify-between">
-    <span class="text-muted text-sm">P&L</span>
-    <i data-lucide="bar-chart-2" class="w-4 h-4 text-muted"></i>
-  </div>
-  <div class="text-2xl font-bold danger">-18.71</div>
-  <div class="flex items-center gap-2 text-sm text-muted">
-    <span class="badge-red">↓ 18.7%</span>
-    
-  </div>
-</div>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 px-6 pb-4">
-  <div class="card p-5">
-    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Portfolio Value</h2>
-    <canvas id="plChart" style="height:220px"></canvas>
-  </div>
-  <div class="card p-5">
-    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Active Markets — World Map</h2>
-    <div id="marketMap" style="height:320px; border-radius:12px; z-index:1;"></div>
-  </div>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-6 pb-6">
-  <div class="card p-5 lg:col-span-2">
-    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Recent Decisions</h2>
-    
-<input id="decisionsTable-search" type="text" placeholder="Search..."
-          class="mb-3 px-3 py-2 bg-surface border border-border rounded-lg text-sm text-muted w-full focus:outline-none focus:border-accent"
-          oninput="filterTable_decisionsTable(this.value)">
-<div class="overflow-x-auto rounded-lg border border-border">
-<table id="decisionsTable" class="min-w-full">
-  <thead class="bg-surface"><tr><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(0)">Market <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(1)">Decision <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(2)">Conviction <span class="text-muted">↕</span></th><th class="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider cursor-pointer hover:text-accent" onclick="sortTable_decisionsTable(3)">Edge <span class="text-muted">↕</span></th></tr></thead>
-  <tbody id="decisionsTable-body"><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr><tr class="border-t border-border hover:bg-white/5 transition-colors"><td class="px-4 py-3 text-sm whitespace-nowrap">?...</td><td class="px-4 py-3 text-sm whitespace-nowrap"><span class="badge-red">SKIP</span></td><td class="px-4 py-3 text-sm whitespace-nowrap">0</td><td class="px-4 py-3 text-sm whitespace-nowrap">0.0%</td></tr></tbody>
-</table>
-</div>
-  </div>
-  <div class="card p-5">
-    <h2 class="text-sm font-semibold text-muted mb-4 uppercase tracking-wider">Activity Feed</h2>
-    <div class="flex flex-col">
-<div class="flex gap-3 py-2 border-b border-border last:border-0">
-  <span class="text-base leading-none mt-0.5">⏭️</span>
-  <div class="flex-1 min-w-0">
-    <p class="text-sm text-muted truncate">?</p>
-    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
-  </div>
-</div>
-<div class="flex gap-3 py-2 border-b border-border last:border-0">
-  <span class="text-base leading-none mt-0.5">⏭️</span>
-  <div class="flex-1 min-w-0">
-    <p class="text-sm text-muted truncate">?</p>
-    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
-  </div>
-</div>
-<div class="flex gap-3 py-2 border-b border-border last:border-0">
-  <span class="text-base leading-none mt-0.5">⏭️</span>
-  <div class="flex-1 min-w-0">
-    <p class="text-sm text-muted truncate">?</p>
-    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
-  </div>
-</div>
-<div class="flex gap-3 py-2 border-b border-border last:border-0">
-  <span class="text-base leading-none mt-0.5">⏭️</span>
-  <div class="flex-1 min-w-0">
-    <p class="text-sm text-muted truncate">?</p>
-    <p class="text-xs text-muted mt-0.5">2026-03-15T02:45</p>
-  </div>
-</div></div>
-  </div>
-</div>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-
+<!-- injected data -->
 <script>
+const PORTFOLIO_DATA = {"starting_capital": 100.0, "cash": 78.6, "open_bets_count": 1, "closed_bets_count": 3, "total_value": 81.29, "exposure": 2.69, "win_rate": 0.0, "wins": 0, "losses": 3, "total_pl": 0.73, "realised_pl": -18.71, "open_bets": [{"market": "Will the price of Bitcoin be between $70,000 and $72,000 on March 16?", "position": "YES", "entry_price": 0.33, "estimated_prob": 0.42, "stake": 2.69, "confidence": "MEDIUM", "end_date": "2026-03-16T16:00:00Z", "grade": "B"}]};
+const DECISIONS_DATA = [{"approved": false, "market_q": "Will the price of Ethereum be above $1,900 on March 16?", "price": 0.978, "reason": "Market overleveraged \u2014 cascade risk too high", "timestamp": "2026-03-15T02:48:17.811194"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $74,000 on March 16?", "price": 0.11, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:48:03.962387"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 16?", "price": 0.978, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:48:03.962049"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $68,000 on March 16?", "price": 0.9, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:48:03.959892"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $72,000 on March 16?", "price": 0.32, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:48:03.958379"}, {"approved": false, "market_q": "Will Bitcoin reach $74,000 March 9-15?", "price": 0.08, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:48:03.956218"}, {"approved": false, "market_q": "Will the price of XRP be above $1.50 on March 16?", "price": 0.04, "reason": "Pre-Claude gate: only 2/11 signals agree", "timestamp": "2026-03-15T02:45:57.654624", "posterior": 0.6753246753246753, "conviction": 0, "edge": 0.6353246753246753, "signal_agreement": 2, "bayesian_prob": 0.6753246753246753}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,000 on March 16?", "price": 0.84, "reason": "Market overleveraged \u2014 cascade risk too high", "timestamp": "2026-03-15T02:45:56.419160"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $68,000 on March 17?", "price": 0.85, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:45:42.635744"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 17?", "price": 0.943, "reason": "Correlated market already open: will the price of bitcoin be between $70,000 and $", "timestamp": "2026-03-15T02:45:42.633925"}];
+const PL_CHART_LABELS = ["Start", "Mar 14", "Mar 14", "Mar 14", "Now"];
+const PL_CHART_VALUES = [100.0, 96.94, 88.94, 81.29, 81.29];
+const MAP_MARKERS = [{"lat": 40.7128, "lon": -74.006, "label": "New York", "color": "#f59e0b", "popup": "<b style='color:#00ff88'>Will the price of Bitcoin be between $70,000 and $72,000 on </b><br>Position: YES \u00b7 Stake: \u20ac2.69<br>Edge: +9.0% \u00b7 Expires: Mar 16 \u00b7 17:00"}, {"lat": 40.732800000000005, "lon": -73.986, "label": "New York (closed)", "color": "#ef4444", "popup": "<b>Ethereum Up or Down on March 14?</b><br>Result: LOST \u00b7 P&L: \u20ac-7.65"}];
+</script>
 
-(function tick(){
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  setTimeout(tick, 1000);
+<!-- ═ HEADER ═════════════════════════════════════════════════════ -->
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-mark">PF</div>
+    <div class="logo-text">
+      <div class="logo-name">POLYFARM</div>
+      <div class="logo-sub">Paper Trading</div>
+    </div>
+  </div>
+  <div class="hdr-pills">
+    <div class="pill">Cash <span class="pv">€78.60</span></div>
+    <div class="pill">Portfolio <span class="pv">€81.29</span></div>
+    <div class="pill">1 open</div>
+  </div>
+  <div class="hdr-clock" id="clk"></div>
+  <div class="hdr-right">
+    <div class="pl-badge">
+      <div class="live-dot"></div>
+      <span>+€0.73 EV</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═ STAT CARDS ══════════════════════════════════════════════════ -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-icon">💼</div>
+    <div class="kpi-label">Total Portfolio</div>
+    <div class="kpi-value white">€81.29</div>
+    <div class="kpi-sub">Started €100 · Paper mode</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">💰</div>
+    <div class="kpi-label">Cash Available</div>
+    <div class="kpi-value white">€78.60</div>
+    <div class="kpi-sub">79% of capital free</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">📊</div>
+    <div class="kpi-label">Open Positions</div>
+    <div class="kpi-value white">1</div>
+    <div class="kpi-sub">€2.69 at risk</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">🎯</div>
+    <div class="kpi-label">Win Rate</div>
+    <div class="kpi-value" style="color:#ef4444">0%</div>
+    <div class="kpi-sub">0W · 3L · 3 settled</div>
+  </div>
+</div>
+
+<!-- ═ MAIN GRID ═══════════════════════════════════════════════════ -->
+<div class="main-grid">
+
+  <!-- LEFT COLUMN -->
+  <div class="col-left">
+
+    <!-- P&L Chart -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">📈 Portfolio P&L Over Time</div>
+        <div class="sec-hint">Cumulative · closed bets</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="plChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Positions Table -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">⚡ Open Positions <span class="sec-pill">1</span></div>
+        <div class="sec-hint">Click header to sort</div>
+      </div>
+      <div class="search-wrap">
+        <input class="search-inp" type="text" id="pos-search" oninput="filterPosTable()" placeholder="🔍  Search positions…">
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="posTable">
+          <thead>
+            <tr>
+              <th onclick="sortPosTable(0)">Market ⇅</th>
+              <th onclick="sortPosTable(1)">Position ⇅</th>
+              <th onclick="sortPosTable(2)">Entry ⇅</th>
+              <th onclick="sortPosTable(3)">Est. ⇅</th>
+              <th onclick="sortPosTable(4)">Edge ⇅</th>
+              <th onclick="sortPosTable(5)">Stake ⇅</th>
+              <th onclick="sortPosTable(6)">If Win ⇅</th>
+              <th onclick="sortPosTable(7)">Grade ⇅</th>
+              <th onclick="sortPosTable(8)">Expires ⇅</th>
+            </tr>
+          </thead>
+          <tbody id="posBody">
+            <tr><td>Will the price of Bitcoin be between $70,000 and $72,00…</td><td><span style="color:#00ff88;font-weight:700">YES</span></td><td>33%</td><td>42%</td><td><span style="color:#00ff88">+9.0%</span></td><td>€2.69</td><td>+€5.46</td><td><span style="background:rgba(234,179,8,0.12);color:#fbbf24;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:800">B</span></td><td><span style="color:#eab308;font-weight:700">1.6d</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Market Map -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">🗺  Market Distribution</div>
+        <div class="sec-hint">Active &amp; recent positions</div>
+      </div>
+      <div class="map-wrap">
+        <div id="market-map"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-right">
+    <div class="panel-hdr">
+      Activity Feed
+      <div class="live-txt"><div class="live-txt-dot"></div>LIVE</div>
+    </div>
+    <div class="activity-scroll" style="padding:0 18px">
+      
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Ethereum be above $1,900 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Market overleveraged — cascade risk too high</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $74,000 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $66,000 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $68,000 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $72,000 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:48</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will Bitcoin reach $74,000 March 9-15?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:45</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of XRP be above $1.50 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Pre-Claude gate: only 2/11 signals agree</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:45</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Ethereum be above $2,000 on March 16?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Market overleveraged — cascade risk too high</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:45</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $68,000 on March 17?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:#374151;box-shadow:0 0 6px #374151;margin-top:2px"></div>
+            <div style="width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="background:rgba(71,85,105,0.2);color:#64748b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.5px">SKIP</span>
+              <span style="font-size:10px;color:#475569">02:45</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#d1d5db;line-height:1.4;margin-bottom:4px">Will the price of Bitcoin be above $66,000 on March 17?</div>
+            <div style="font-size:10px;color:#4b5563;font-style:italic">Correlated market already open: will the price of bitcoin be between $70,000 and</div>
+          </div>
+        </div>
+    </div>
+    <div class="scanner-bar">
+      <div class="scanner-dot" style="background:rgba(0,255,136,1);box-shadow:0 0 6px rgba(0,255,136,1)"></div>
+      <div class="scanner-label" style="color:var(--accent)">
+        Scanner · Active · 02:48:17
+      </div>
+      <div class="scanner-time">Updated Mar 15 2026 · 02:49:25</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═ FOOTER ══════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-l">
+    <span class="footer-brand">⬡ POLYFARM</span>
+    <span class="footer-tag">PAPER TRADING</span>
+    <span class="footer-tag">POLYMARKET</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span>Auto-refresh 60s · <span id="cdown" style="color:var(--accent);font-weight:700">60</span>s</span>
+    <a href="https://raphoc-hub.github.io/polyfarm-dashboard/" class="gh-link" target="_blank">📡 GitHub Pages ↗</a>
+  </div>
+</footer>
+
+<!-- ═ SCRIPTS ══════════════════════════════════════════════════════ -->
+<script>
+// Clock
+(function tick() {
+  var n=new Date(), D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      p=x=>String(x).padStart(2,'0');
+  var el=document.getElementById('clk');
+  if(el) el.textContent = D[n.getDay()]+' '+M[n.getMonth()]+' '+n.getDate()+' · '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+' CET';
+  setTimeout(tick,1000);
 })();
 
-new Chart(document.getElementById('plChart'), {
-  type: 'line',
-  data: { labels: ["Scan 1", "Scan 2", "Scan 3", "Scan 4", "Scan 5"], datasets: [{"label": "Portfolio Value", "data": [100.0, 100.0, 100.0, 100.0, 100.0], "borderColor": "#00ff88", "backgroundColor": "#00ff8822", "fill": true, "tension": 0.4, "pointRadius": 3, "borderWidth": 2}] },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#9ca3af' } }, title: { display: false, text: '', color: '#e5e5e5' } },
-    scales: {
-      x: { grid: { color: '#1f1f1f' }, ticks: { color: '#6b7280' } },
-      y: { grid: { color: '#1f1f1f' }, ticks: { color: '#6b7280' } }
+// Countdown
+var cd=60;
+setInterval(function(){
+  cd--;
+  var el=document.getElementById('cdown');
+  if(el) el.textContent=cd;
+  if(cd<=0) location.reload();
+},1000);
+
+// P&L Chart
+(function() {
+  var ctx = document.getElementById('plChart').getContext('2d');
+  var color = '#ef4444';
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: PL_CHART_LABELS,
+      datasets: [{
+        label: 'Portfolio Value (€)',
+        data: PL_CHART_VALUES,
+        borderColor: color,
+        backgroundColor: color.replace('#','').length === 6
+          ? 'rgba(' + [parseInt(color.slice(1,3),16),parseInt(color.slice(3,5),16),parseInt(color.slice(5,7),16)].join(',') + ',0.08)'
+          : 'rgba(0,255,136,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#f1f5f9',
+          bodyColor: '#94a3b8',
+          callbacks: {
+            label: ctx => '€' + ctx.parsed.y.toFixed(2)
+          }
+        },
+      },
+      scales: {
+        x: { grid: {color:'rgba(255,255,255,0.04)'}, ticks: {color:'#4b5563',font:{size:10}} },
+        y: { grid: {color:'rgba(255,255,255,0.04)'}, ticks: {color:'#4b5563',font:{size:10},callback: v=>'€'+v} }
+      }
     }
-  }
-});
-
-var marketMap = L.map('marketMap', {zoomControl:true}).setView([47.5, 10.0], 3);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {attribution:'© OpenStreetMap © CARTO', maxZoom:19}).addTo(marketMap);
-
-L.circleMarker([47.49, 19.04], {
-  radius: 8, fillColor: '#00ff88',
-  color: '#fff', weight: 1, fillOpacity: 0.9
-}).addTo(marketMap).bindPopup(`<b>Hungary PM Market</b><br>Orbán: 37% | Magyar: 62%<br>Volume: $3.4M`);
-
-L.circleMarker([30.29, -81.44], {
-  radius: 8, fillColor: '#f59e0b',
-  color: '#fff', weight: 1, fillOpacity: 0.9
-}).addTo(marketMap).bindPopup(`<b>Masters Tournament</b><br>Scheffler: 19% | McIlroy: 9%`);
-
-L.circleMarker([41.9, 12.5], {
-  radius: 8, fillColor: '#00ff88',
-  color: '#fff', weight: 1, fillOpacity: 0.9
-}).addTo(marketMap).bindPopup(`<b>Italy WC Qualifier</b><br>Volume: $217K`);
-
-
-function sortTable_decisionsTable(col) {
-  const tb = document.getElementById('decisionsTable-body');
-  const rows = Array.from(tb.rows);
-  const asc = tb.dataset.sortCol == col && tb.dataset.sortDir == 'asc';
-  rows.sort((a,b) => {
-    const va = a.cells[col].innerText, vb = b.cells[col].innerText;
-    return asc ? vb.localeCompare(va, undefined, {numeric:true}) : va.localeCompare(vb, undefined, {numeric:true});
   });
-  tb.dataset.sortCol = col; tb.dataset.sortDir = asc ? 'desc' : 'asc';
-  rows.forEach(r => tb.appendChild(r));
+})();
+
+// Leaflet map
+(function() {
+  var map = L.map('market-map', {zoomControl:true, attributionControl:false})
+             .setView([30, 10], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  MAP_MARKERS.forEach(function(mk) {
+    var icon = L.divIcon({
+      html: '<div style="width:14px;height:14px;border-radius:50%;background:'+mk.color+';border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 10px '+mk.color+'"></div>',
+      iconSize:[14,14], iconAnchor:[7,7], popupAnchor:[0,-10], className:''
+    });
+    L.marker([mk.lat, mk.lon], {icon:icon}).addTo(map)
+     .bindPopup('<div style="font-family:Inter,sans-serif;font-size:12px;min-width:200px;padding:4px">'+mk.popup+'</div>');
+  });
+})();
+
+// Table sort
+var posTableDir = {};
+function sortPosTable(col) {
+  var tbl = document.getElementById('posTable');
+  var rows = Array.from(tbl.tBodies[0].rows);
+  var asc = !posTableDir[col];
+  posTableDir[col] = asc;
+  rows.sort(function(a,b) {
+    var av = a.cells[col].innerText.replace(/[€%+↑↓]/g,'').trim();
+    var bv = b.cells[col].innerText.replace(/[€%+↑↓]/g,'').trim();
+    var an = parseFloat(av), bn = parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn)) return asc?an-bn:bn-an;
+    return asc?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  rows.forEach(function(r){tbl.tBodies[0].appendChild(r);});
 }
-function filterTable_decisionsTable(q) {
-  const rows = document.getElementById('decisionsTable-body').rows;
-  q = q.toLowerCase();
-  for (let r of rows) {
+function filterPosTable() {
+  var q = document.getElementById('pos-search').value.toLowerCase();
+  Array.from(document.getElementById('posBody').rows).forEach(function(r) {
     r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
-  }
+  });
 }
-lucide.createIcons();
 </script>
+
 </body>
 </html>
