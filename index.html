@@ -3,624 +3,660 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="PolyFarm Quant Terminal — Prediction market trading dashboard">
+<meta name="description" content="PolyFarm — Premium Quantitative Trading Dashboard">
 <meta name="color-scheme" content="dark">
-<title>PolyFarm — Quant Terminal</title>
+<title>PolyFarm — Quant Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 const PORTFOLIO = {"starting_capital": 100, "cash": 0.0, "open_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "news": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "direction": "UP", "position": "YES", "entry_price": 0.46, "estimated_prob": 0.6784155045280025, "stake": 8.0, "potential_payout": 17.39, "potential_profit": 9.39, "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:36.065488", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-72k-on-march-18"}, {"id": "bet_002", "market": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "news": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "direction": "UP", "position": "YES", "entry_price": 0.72, "estimated_prob": 0.9004609741558446, "stake": 8.0, "potential_payout": 11.11, "potential_profit": 3.11, "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:45.396838", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-17"}, {"id": "bet_003", "market": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.5234581349043829, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:05.311196", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-19"}, {"id": "bet_004", "market": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:20.699322", "resolved_at": null, "result": null, "pl": null, "slug": "will-the-price-of-bitcoin-be-between-72000-74000-on-march-16"}, {"id": "bet_005", "market": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.69, "estimated_prob": 0.8998000337148219, "stake": 8.0, "potential_payout": 11.59, "potential_profit": 3.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:21.603219", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-18"}, {"id": "bet_006", "market": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "news": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:27.013066", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-17"}, {"id": "bet_007", "market": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.26, "estimated_prob": 0.45451419883021227, "stake": 8.0, "potential_payout": 30.77, "potential_profit": 22.77, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:32.108358", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-18"}, {"id": "bet_008", "market": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.67, "estimated_prob": 0.8827578551591637, "stake": 8.0, "potential_payout": 11.94, "potential_profit": 3.94, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:00.470816", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-19"}, {"id": "bet_009", "market": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.21, "estimated_prob": 0.2993808552445522, "stake": 7.02, "potential_payout": 33.43, "potential_profit": 26.41, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:03.508341", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-17"}, {"id": "bet_010", "market": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "news": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:05.147268", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-66k-on-march-19"}, {"id": "bet_011", "market": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.83, "estimated_prob": 0.9562717971088787, "stake": 8.0, "potential_payout": 9.64, "potential_profit": 1.64, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:12.117070", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-19"}, {"id": "bet_012", "market": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.09, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 88.89, "potential_profit": 80.89, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:15.601867", "resolved_at": null, "result": null, "pl": null, "slug": "will-the-price-of-bitcoin-be-between-74000-76000-on-march-16"}, {"id": "bet_013", "market": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.82, "estimated_prob": 0.97, "stake": 4.98, "potential_payout": 6.07, "potential_profit": 1.09, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:25.166369", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-18"}], "closed_bets": [], "total_pl": 0};
-const DECISIONS = [{"approved": false, "market_q": "Will the price of Ethereum be above $2,100 on March 17?", "price": 0.974, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.839470"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,200 on March 17?", "price": 0.83, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.840136"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 20?", "price": 0.977, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.841078"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,500 on March 18?", "price": 0.083, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.842427"}, {"approved": false, "market_q": "Will Ethereum reach $2,600 March 16-22?", "price": 0.18, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.842949"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,600 on March 19?", "price": 0.036, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.843247"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 17?", "price": 0.04, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.843390"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,000 on March 18?", "price": 0.975, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.843684"}, {"approved": false, "market_q": "Will the price of Ethereum be between $2,200 and $2,300 on March 18?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.843853"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $78,000 and $80,000 on March 19?", "price": 0.04, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.844697"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,900 and $2,000 on March 19?", "price": 0.15, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.844909"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.845233"}, {"approved": false, "market_q": "Will the price of XRP be above $1.30 on March 21?", "price": 0.88, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.845524"}, {"approved": false, "market_q": "Will the price of Solana be above $100 on March 21?", "price": 0.1, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.845717"}, {"approved": false, "market_q": "Will the price of XRP be above $1.10 on March 21?", "price": 0.98, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.846008"}, {"approved": false, "market_q": "Will the price of XRP be above $1.20 on March 21?", "price": 0.96, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.846211"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 21?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:45:29.846426"}];
+const DECISIONS = [{"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 21?", "price": 0.98, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.736948"}, {"approved": false, "market_q": "Will Bitcoin dip to $62,000 March 16-22?", "price": 0.03, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.737128"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $72,000 on March 19?", "price": 0.75, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.737379"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $76,000 on March 20?", "price": 0.36, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.737621"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $70,000 on March 21?", "price": 0.79, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.737898"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,100 on March 17?", "price": 0.975, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.738192"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 20?", "price": 0.968, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.738373"}, {"approved": false, "market_q": "Will Ethereum dip to $1,900 March 16-22?", "price": 0.07, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.738662"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 22?", "price": 0.979, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.739199"}, {"approved": false, "market_q": "Will Bitcoin dip to $60,000 March 16-22?", "price": 0.026, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.739511"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $64,000 on March 20?", "price": 0.977, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.739739"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $68,000 and $70,000 on March 17?", "price": 0.04, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.739995"}, {"approved": false, "market_q": "Will Ethereum reach $2,600 March 16-22?", "price": 0.18, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.740141"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,600 on March 19?", "price": 0.036, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.740602"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,200 on March 17?", "price": 0.88, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.740880"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,000 on March 18?", "price": 0.977, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.741278"}, {"approved": false, "market_q": "Will the price of Solana be between $80 and $90 on March 16?", "price": 0.022, "reason": "Max exposure reached (100%)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.741502"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $78,000 and $80,000 on March 19?", "price": 0.04, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.742310"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.742534"}, {"approved": false, "market_q": "Will the price of Solana be above $100 on March 21?", "price": 0.1, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T14:57:20.742770"}];
 </script>
 <style>
-/* ══════════════════════════════════════════════════════════════
-   POLYFARM QUANT TERMINAL — Design System
-   ══════════════════════════════════════════════════════════════ */
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* ── Surface Palette ── */
-  --surface-base: #06060a;
-  --surface-1: #0c0c12;
-  --surface-2: #12121a;
-  --surface-3: #181820;
-  --surface-4: #1e1e28;
-  --surface-raised: #222230;
+  /* Surface */
+  --bg: #0a0a12;
+  --s1: #0e0e1a;
+  --s2: #131320;
+  --s3: #1a1a2e;
+  --s4: #22223a;
+  --s-raised: #2a2a44;
+  --s-glass: rgba(19, 19, 32, 0.75);
+  --s-glass-border: rgba(255, 255, 255, 0.08);
 
-  /* ── Border ── */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  /* Brand */
+  --violet: #8b5cf6;
+  --violet-dim: rgba(139, 92, 246, 0.12);
+  --violet-glow: rgba(139, 92, 246, 0.25);
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6, 182, 212, 0.10);
+  --cyan-glow: rgba(6, 182, 212, 0.20);
+  --emerald: #10b981;
+  --emerald-dim: rgba(16, 185, 129, 0.10);
+  --emerald-glow: rgba(16, 185, 129, 0.20);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245, 158, 11, 0.10);
+  --coral: #ff6b6b;
+  --coral-dim: rgba(255, 107, 107, 0.10);
 
-  /* ── Text — all meet 4.5:1 on dark backgrounds ── */
-  --text-primary: #ededf0;
-  --text-secondary: #a0a0b0;
-  --text-tertiary: #6e6e80;
-  --text-muted: #4a4a5a;
+  /* Text — AA contrast on dark */
+  --t1: #f0f0f5;
+  --t2: #a8a8c0;
+  --t3: #6b6b88;
+  --t4: #44445a;
 
-  /* ── Accent Colors — tuned for AA contrast on dark ── */
-  --accent-green: #34d399;
-  --accent-green-dim: rgba(52, 211, 153, 0.12);
-  --accent-green-border: rgba(52, 211, 153, 0.25);
-  --accent-red: #f87171;
-  --accent-red-dim: rgba(248, 113, 113, 0.10);
-  --accent-red-border: rgba(248, 113, 113, 0.25);
-  --accent-blue: #60a5fa;
-  --accent-blue-dim: rgba(96, 165, 250, 0.10);
-  --accent-blue-border: rgba(96, 165, 250, 0.25);
-  --accent-amber: #fbbf24;
-  --accent-amber-dim: rgba(251, 191, 36, 0.10);
+  /* Border */
+  --b1: rgba(255, 255, 255, 0.05);
+  --b2: rgba(255, 255, 255, 0.08);
+  --b3: rgba(255, 255, 255, 0.14);
 
-  /* ── Typography ── */
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.8125rem;  /* 13px */
-  --text-base: 0.875rem; /* 14px */
-  --text-md: 1rem;       /* 16px */
-  --text-lg: 1.25rem;    /* 20px */
-  --text-xl: 1.5rem;     /* 24px */
-  --text-2xl: 2rem;      /* 32px */
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
-  /* ── Spacing ── */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 100px;
 
-  /* ── Radii ── */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-pill: 100px;
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+  --shadow-glow-v: 0 0 30px rgba(139,92,246,0.15);
+  --shadow-glow-c: 0 0 30px rgba(6,182,212,0.12);
+  --shadow-glow-e: 0 0 30px rgba(16,185,129,0.12);
 
-  /* ── Transitions ── */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --duration-fast: 150ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
+  /* Transitions */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 250ms;
+  --dur-slow: 400ms;
 
-  /* ── Focus ring ── */
-  --focus-ring: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--accent-blue);
+  /* Focus */
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--violet);
 
-  /* ── Shadows ── */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-  --shadow-elevated: 0 4px 16px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+  /* Sidebar */
+  --sidebar-w: 240px;
+  --sidebar-collapsed: 64px;
 }
 
-/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* ── Base ── */
 html, body {
   height: 100%;
-  background: var(--surface-base);
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  font-size: 16px;
-  line-height: 1.5;
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
-/* Subtle noise overlay */
-html::before {
+/* Subtle ambient gradient */
+body::before {
   content: '';
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 9999;
-  opacity: 0.018;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+  position: fixed;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Subtle grid overlay */
-html::after {
-  content: '';
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 64px 64px;
-}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: var(--radius-pill); }
-::-webkit-scrollbar-thumb:hover { background: var(--surface-raised); }
+::-webkit-scrollbar-thumb { background: var(--s4); border-radius: var(--r-pill); }
+::-webkit-scrollbar-thumb:hover { background: var(--s-raised); }
 
-/* ── Focus States (WCAG) ── */
 :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
 }
 
-a:focus-visible,
-button:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-/* ── Skip link ── */
 .skip-link {
-  position: absolute;
-  top: -100%;
-  left: var(--space-4);
-  z-index: 10000;
-  padding: var(--space-3) var(--space-5);
-  background: var(--accent-blue);
-  color: var(--surface-base);
-  font-weight: 600;
-  font-size: var(--text-base);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transition: top var(--duration-fast);
+  position: absolute; top: -100%; left: 16px; z-index: 10000;
+  padding: 10px 20px; background: var(--violet); color: white;
+  font-weight: 600; border-radius: var(--r-sm); text-decoration: none;
 }
-.skip-link:focus {
-  top: var(--space-4);
-}
+.skip-link:focus { top: 16px; }
 
-/* ── Animations ── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
+.mono { font-family: var(--font-mono); }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
 }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-@keyframes barGrow {
-  from { width: 0; }
-}
-@keyframes tabSlide {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes barGrow { from { width: 0; } }
+@keyframes countUp { from { opacity: 0.5; } to { opacity: 1; } }
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(139,92,246,0.15); }
+  50% { box-shadow: 0 0 25px rgba(139,92,246,0.25); }
 }
 
-.stagger { animation: fadeUp 0.45s var(--ease-out) both; }
+.stagger { animation: fadeIn 0.5s var(--ease) both; }
 .stagger:nth-child(1) { animation-delay: 0ms; }
-.stagger:nth-child(2) { animation-delay: 60ms; }
-.stagger:nth-child(3) { animation-delay: 120ms; }
-.stagger:nth-child(4) { animation-delay: 180ms; }
-.stagger:nth-child(5) { animation-delay: 240ms; }
-.stagger:nth-child(6) { animation-delay: 300ms; }
+.stagger:nth-child(2) { animation-delay: 80ms; }
+.stagger:nth-child(3) { animation-delay: 160ms; }
+.stagger:nth-child(4) { animation-delay: 240ms; }
+.stagger:nth-child(5) { animation-delay: 320ms; }
+.stagger:nth-child(6) { animation-delay: 400ms; }
 
-.page[aria-hidden="false"] { animation: tabSlide 0.25s var(--ease-out) both; }
-
-/* ── Mono helper ── */
-.mono { font-family: var(--font-mono); }
-
-/* ══════════════════════════════════════════════════════════════
-   APP SHELL
-   ══════════════════════════════════════════════════════════════ */
-.shell {
+/* ═══════════════════════════════════════
+   APP LAYOUT: Sidebar + Main
+   ═══════════════════════════════════════ */
+.app {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-  overflow: hidden;
   position: relative;
   z-index: 1;
 }
 
-/* ── TOPBAR ── */
-.topbar {
-  height: 56px;
+/* ═══════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0 var(--space-6);
-  position: relative;
+  flex-direction: column;
+  background: var(--s1);
+  border-right: 1px solid var(--b1);
+  padding: 24px 0;
+  transition: width var(--dur) var(--ease);
   overflow: hidden;
-  gap: var(--space-4);
+  z-index: 10;
 }
 
-/* Ambient gradient sweep */
-.topbar::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%; width: 300%; height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(52,211,153,0.03) 33%, transparent 66%);
-  animation: shimmer 8s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.logo {
+.sidebar-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  flex-shrink: 0;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 32px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.logo-mark {
-  width: 32px; height: 32px;
+.brand-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--violet), var(--cyan));
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--accent-green);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-weight: 800;
-  font-size: var(--text-xs);
-  color: var(--accent-green);
+  font-size: 13px;
+  color: white;
   letter-spacing: -0.02em;
-  background: var(--accent-green-dim);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-glow-v);
 }
 
-.logo-text {
-  font-family: var(--font-display);
+.brand-name {
   font-weight: 700;
-  font-size: var(--text-base);
-  letter-spacing: 0.14em;
-  color: var(--text-primary);
-}
-
-.live-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  background: var(--accent-green-dim);
-  border: 1px solid var(--accent-green-border);
-  border-radius: var(--radius-pill);
-}
-
-.live-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--accent-green);
-  animation: pulse-glow 2s ease-out infinite;
-  flex-shrink: 0;
-}
-
-.live-label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--accent-green);
-  letter-spacing: 0.05em;
-}
-
-.tb-pills {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-left: var(--space-4);
-}
-
-.tb-pill {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-.tb-pill:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
-.tb-pill:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.tb-pill:not(:first-child) { border-left: none; }
-.tb-pill:only-child { border-radius: var(--radius-sm); }
-
-.tb-pill-label {
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-size: 16px;
   letter-spacing: 0.08em;
-  color: var(--text-tertiary);
-}
-.tb-pill-val { font-weight: 600; color: var(--text-primary); }
-
-.tb-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  flex-shrink: 0;
+  color: var(--t1);
 }
 
-.tb-badge {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--accent-amber);
-  background: var(--accent-amber-dim);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-}
-
-.tb-clock {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-/* ── TAB BAR ── */
-.tab-bar {
-  height: 48px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: stretch;
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0 var(--space-6);
-  gap: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.tab-bar::-webkit-scrollbar { display: none; }
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-5);
-  cursor: pointer;
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.1em;
+.brand-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--t3);
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  border: none;
-  border-bottom: 2px solid transparent;
-  background: none;
-  white-space: nowrap;
-  min-height: 44px;
-  transition: color var(--duration-fast), border-color var(--duration-fast);
-}
-.tab-btn:hover { color: var(--text-secondary); }
-.tab-btn[aria-selected="true"] {
-  color: var(--accent-green);
-  border-bottom-color: var(--accent-green);
+  margin-top: 1px;
 }
 
-.tab-count {
-  font-size: 0.6875rem;
+/* Status pill */
+.sidebar-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 24px;
+  padding: 8px 12px;
+  background: var(--emerald-dim);
+  border: 1px solid rgba(16,185,129,0.18);
+  border-radius: var(--r-sm);
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.status-label {
   font-family: var(--font-mono);
-  background: var(--surface-3);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+  letter-spacing: 0.08em;
+}
+
+.status-mode {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--amber);
+  background: var(--amber-dim);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t4);
+  padding: 16px 12px 6px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--t3);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--dur) var(--ease);
+  width: 100%;
+  text-align: left;
+  min-height: 40px;
+  position: relative;
+}
+.nav-btn:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--t2);
+}
+.nav-btn[aria-selected="true"] {
+  background: var(--violet-dim);
+  color: var(--violet);
   font-weight: 600;
 }
-.tab-btn[aria-selected="true"] .tab-count {
-  background: var(--accent-green-dim);
-  color: var(--accent-green);
+.nav-btn[aria-selected="true"]::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--violet);
+  border-radius: 0 3px 3px 0;
 }
 
-/* ── CONTENT ── */
-.content-area {
+.nav-icon {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-btn[aria-selected="true"] .nav-icon { opacity: 1; }
+
+.nav-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.06);
+  color: var(--t3);
+  padding: 1px 7px;
+  border-radius: 10px;
+  min-width: 22px;
+  text-align: center;
+}
+.nav-btn[aria-selected="true"] .nav-count {
+  background: var(--violet-dim);
+  color: var(--violet);
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--b1);
+  margin-top: auto;
+}
+
+.sidebar-clock {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--t3);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════ */
+.main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  position: relative;
+  min-width: 0;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--b1);
+  background: var(--s1);
+}
+
+.page-title-area {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--t3);
+}
+
+.header-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.h-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--t2);
+}
+.h-pill-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .page {
   display: none;
-  height: 100%;
-  overflow-y: auto;
-  padding: var(--space-6);
+  padding: 28px 32px 48px;
+  animation: fadeIn 0.35s var(--ease) both;
 }
-.page[aria-hidden="false"] { display: block; }
+.page.active { display: block; }
 
-/* ══════════════════════════════════════════════════════════════
-   GRID SYSTEM
-   ══════════════════════════════════════════════════════════════ */
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
-
-@media (max-width: 1024px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .grid-3 { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 640px) {
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+/* ═══════════════════════════════════════
+   HERO KPIs
+   ═══════════════════════════════════════ */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.gap-4 { gap: var(--space-4); }
-.mb-4 { margin-bottom: var(--space-4); }
-.mb-5 { margin-bottom: var(--space-5); }
-.mb-6 { margin-bottom: var(--space-6); }
-
-/* ══════════════════════════════════════════════════════════════
-   KPI CARDS
-   ══════════════════════════════════════════════════════════════ */
-.kpi {
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: var(--space-5) var(--space-6);
+.hero-kpi {
   position: relative;
+  background: linear-gradient(135deg, var(--s2), var(--s3));
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  padding: 24px;
   overflow: hidden;
-  transition: border-color var(--duration-normal), box-shadow var(--duration-normal);
-  box-shadow: var(--shadow-card);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur);
 }
-.kpi::before {
+.hero-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--b3);
+}
+
+/* Gradient top bar */
+.hero-kpi::before {
   content: '';
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 3px;
-  background: linear-gradient(90deg, var(--accent-green), transparent);
-  opacity: 0.6;
-  transition: opacity var(--duration-normal);
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  opacity: 0.7;
+  transition: opacity var(--dur);
 }
-.kpi:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-elevated);
+.hero-kpi:hover::before { opacity: 1; }
+.hero-kpi.accent-emerald::before { background: linear-gradient(90deg, var(--emerald), var(--cyan)); }
+.hero-kpi.accent-cyan::before { background: linear-gradient(90deg, var(--cyan), var(--violet)); }
+.hero-kpi.accent-coral::before { background: linear-gradient(90deg, var(--coral), var(--amber)); }
+
+/* Subtle glow on hero cards */
+.hero-kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent);
+  pointer-events: none;
 }
-.kpi:hover::before { opacity: 1; }
+.hero-kpi.accent-emerald::after { background: linear-gradient(180deg, rgba(16,185,129,0.05), transparent); }
+.hero-kpi.accent-cyan::after { background: linear-gradient(180deg, rgba(6,182,212,0.05), transparent); }
+.hero-kpi.accent-coral::after { background: linear-gradient(180deg, rgba(255,107,107,0.05), transparent); }
 
-.kpi.accent-red::before { background: linear-gradient(90deg, var(--accent-red), transparent); }
-.kpi.accent-blue::before { background: linear-gradient(90deg, var(--accent-blue), transparent); }
-
-.kpi-label {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
+.hero-label {
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-3);
+  color: var(--t3);
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
 }
 
-.kpi-value {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
+.hero-value {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--t1);
+  position: relative;
+  z-index: 1;
 }
 
-.kpi-sub {
+.hero-sub {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  margin-top: var(--space-3);
+  font-size: 11px;
+  color: var(--t3);
+  margin-top: 10px;
   line-height: 1.5;
+  position: relative;
+  z-index: 1;
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    CARDS
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .card {
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
   overflow: hidden;
+  transition: box-shadow var(--dur), border-color var(--dur);
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--b3);
 }
 
-.card-body { padding: var(--space-5); }
-
-.card-header {
+.card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--b1);
 }
 
 .card-title {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  color: var(--t2);
 }
 
-.card-sub {
+.card-badge {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  font-size: 11px;
+  color: var(--t3);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   COLOR UTILITIES
-   ══════════════════════════════════════════════════════════════ */
-.clr-green { color: var(--accent-green); }
-.clr-red { color: var(--accent-red); }
-.clr-blue { color: var(--accent-blue); }
-.clr-dim { color: var(--text-secondary); }
-.clr-muted { color: var(--text-tertiary); }
+.card-body { padding: 20px; }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
+   GRID LAYOUTS
+   ═══════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-5 { margin-bottom: 20px; }
+.mb-6 { margin-bottom: 24px; }
+
+@media (max-width: 1100px) { .hero-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .hero-grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════
+   COLOR UTILITIES
+   ═══════════════════════════════════════ */
+.clr-green { color: var(--emerald); }
+.clr-red { color: var(--coral); }
+.clr-blue { color: var(--cyan); }
+.clr-violet { color: var(--violet); }
+.clr-dim { color: var(--t2); }
+.clr-muted { color: var(--t3); }
+
+/* ═══════════════════════════════════════
    PILLS / BADGES
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .pill {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  border-radius: 6px;
   letter-spacing: 0.04em;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-.pill-yes  { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid var(--accent-blue-border); }
-.pill-no   { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid var(--accent-red-border); }
-.pill-won  { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid var(--accent-green-border); }
-.pill-lost { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid var(--accent-red-border); }
-.pill-open { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid var(--accent-blue-border); }
-.pill-bet  { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid var(--accent-green-border); }
-.pill-skip { background: rgba(255,255,255,0.04); color: var(--text-tertiary); border: 1px solid var(--border-default); }
-.pill-conf-high { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid var(--accent-green-border); }
-.pill-conf-med  { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid var(--accent-blue-border); }
-.pill-conf-low  { background: rgba(255,255,255,0.04); color: var(--text-tertiary); border: 1px solid var(--border-default); }
+.pill-yes  { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.2); }
+.pill-no   { background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(255,107,107,0.2); }
+.pill-won  { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
+.pill-lost { background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(255,107,107,0.2); }
+.pill-open { background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(139,92,246,0.2); }
+.pill-bet  { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
+.pill-skip { background: rgba(255,255,255,0.04); color: var(--t3); border: 1px solid var(--b2); }
+.pill-conf-high { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
+.pill-conf-med  { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.2); }
+.pill-conf-low  { background: rgba(255,255,255,0.04); color: var(--t3); border: 1px solid var(--b2); }
 
-/* ══════════════════════════════════════════════════════════════
-   CHART
-   ══════════════════════════════════════════════════════════════ */
-.chart-wrap {
-  position: relative;
-}
-.chart-wrap canvas {
-  border-radius: var(--radius-sm);
-}
+/* ═══════════════════════════════════════
+   CHARTS
+   ═══════════════════════════════════════ */
+.chart-wrap { position: relative; }
+.chart-wrap canvas { border-radius: var(--r-sm); }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    EMPTY STATE
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .empty-state {
   text-align: center;
-  padding: var(--space-12) var(--space-6);
+  padding: 48px 24px;
 }
-
-.empty-state-icon {
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-4);
-  opacity: 0.4;
-}
-
+.empty-state-icon { font-size: 28px; margin-bottom: 12px; opacity: 0.35; }
 .empty-state-msg {
-  font-family: var(--font-mono);
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
+  font-size: 14px;
+  color: var(--t2);
+  margin-bottom: 6px;
 }
-
 .empty-state-sub {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  font-size: 12px;
+  color: var(--t3);
   line-height: 1.6;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   TABLE
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   DATA TABLE
+   ═══════════════════════════════════════ */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -628,15 +664,14 @@ button:focus-visible {
 
 .data-table th {
   text-align: left;
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
+  padding: 10px 14px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  background: var(--surface-3);
-  border-bottom: 1px solid var(--border-default);
+  color: var(--t3);
+  background: var(--s3);
+  border-bottom: 1px solid var(--b2);
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -644,63 +679,72 @@ button:focus-visible {
 }
 
 .data-table td {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--b1);
+  color: var(--t2);
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: 13px;
   vertical-align: middle;
-  line-height: 1.5;
 }
 
 .data-table tbody tr {
-  transition: background var(--duration-fast);
+  transition: background var(--dur);
 }
-.data-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.data-table tbody tr:hover td { background: rgba(139,92,246,0.03); }
 .data-table tbody tr:last-child td { border-bottom: none; }
 
 .data-table .col-main {
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  font-size: var(--text-base);
+  color: var(--t1);
+  font-family: var(--font-sans);
+  font-size: 14px;
   font-weight: 500;
 }
 
 .data-table a {
   color: inherit;
   text-decoration: none;
-  transition: color var(--duration-fast);
+  transition: color var(--dur);
 }
-.data-table a:hover { color: var(--accent-green); }
+.data-table a:hover { color: var(--violet); }
 .data-table a:hover .link-text {
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(52, 211, 153, 0.4);
+  text-decoration-color: rgba(139,92,246,0.4);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    BET CARDS (Positions)
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .bet-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-  border-left: 3px solid var(--accent-blue);
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  margin-bottom: 10px;
   overflow: hidden;
-  transition: border-left-color var(--duration-normal), box-shadow var(--duration-normal);
-  box-shadow: var(--shadow-card);
+  transition: border-color var(--dur), box-shadow var(--dur), transform var(--dur);
+  position: relative;
+}
+.bet-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--violet), var(--cyan));
+  opacity: 0.6;
+  transition: opacity var(--dur);
 }
 .bet-card:hover {
-  border-left-color: var(--accent-green);
-  box-shadow: var(--shadow-elevated);
+  border-color: var(--b3);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
+.bet-card:hover::before { opacity: 1; }
 
 .bet-card-head {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  gap: 12px;
+  padding: 16px 20px 16px 24px;
   cursor: pointer;
   border: none;
   background: none;
@@ -709,64 +753,58 @@ button:focus-visible {
   color: inherit;
   font: inherit;
   min-height: 56px;
-  transition: background var(--duration-fast);
+  transition: background var(--dur);
 }
 .bet-card-head:hover { background: rgba(255,255,255,0.015); }
 
 .bet-market {
   flex: 1;
   min-width: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--t1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
 }
 .bet-market a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px dashed rgba(255,255,255,0.15);
-  padding-bottom: 1px;
-  transition: border-color var(--duration-fast), color var(--duration-fast);
+  transition: color var(--dur);
 }
-.bet-market a:hover { border-bottom-color: var(--accent-green); color: var(--accent-green); }
+.bet-market a:hover { color: var(--violet); }
 
 .bet-exlink {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  font-size: 11px;
+  color: var(--t3);
   margin-left: 4px;
 }
 
 .bet-stats {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: 20px;
   flex-shrink: 0;
 }
 
 .bet-stat { text-align: right; }
 .bet-stat-val {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.5;
 }
 .bet-stat-lbl {
-  font-family: var(--font-display);
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  color: var(--t4);
   margin-top: 2px;
 }
 
 .bet-chevron {
-  color: var(--text-tertiary);
-  transition: transform var(--duration-normal) var(--ease-out);
+  color: var(--t3);
+  transition: transform var(--dur) var(--ease);
   flex-shrink: 0;
 }
 .bet-card.open .bet-chevron { transform: rotate(180deg); }
@@ -774,80 +812,85 @@ button:focus-visible {
 .bet-detail {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s var(--ease-out);
-  border-top: 0px solid var(--border-subtle);
+  transition: max-height 0.4s var(--ease);
+  border-top: 0px solid var(--b1);
 }
 .bet-card.open .bet-detail {
   max-height: 600px;
   border-top-width: 1px;
 }
 
-.bet-detail-inner { padding: 0 var(--space-5) var(--space-5); }
+.bet-detail-inner { padding: 0 20px 20px 24px; }
 
 .bet-detail-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-3);
-  margin: var(--space-4) 0;
+  gap: 10px;
+  margin: 16px 0;
 }
 @media (max-width: 700px) { .bet-detail-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .bet-detail-item {
-  background: var(--surface-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  border-left: 2px solid var(--border-default);
+  background: var(--s3);
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  border-left: 2px solid var(--violet);
 }
 
 .bet-detail-item-label {
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-1);
+  color: var(--t3);
+  margin-bottom: 4px;
 }
 
 .bet-detail-item-val {
   font-family: var(--font-mono);
-  font-size: var(--text-md);
+  font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--t1);
 }
 
 .bet-reasoning {
-  background: var(--surface-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
+  background: var(--s3);
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: 13px;
   line-height: 1.7;
-  color: var(--text-secondary);
-  border-left: 3px solid var(--border-default);
+  color: var(--t2);
+  border-left: 3px solid var(--violet);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    DECISION CARDS
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .dec-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  margin-bottom: 8px;
   overflow: hidden;
-  transition: border-left-color var(--duration-normal), box-shadow var(--duration-normal);
-  box-shadow: var(--shadow-card);
+  transition: border-color var(--dur), box-shadow var(--dur), transform var(--dur);
 }
-.dec-card.is-bet { border-left: 3px solid var(--accent-green); }
-.dec-card.is-skip { border-left: 3px solid transparent; }
-.dec-card:hover { box-shadow: var(--shadow-elevated); }
+.dec-card.is-bet {
+  border-left: 3px solid var(--emerald);
+}
+.dec-card.is-skip {
+  border-left: 3px solid transparent;
+}
+.dec-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
 
 .dec-head {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  gap: 10px;
+  padding: 14px 20px;
   cursor: pointer;
   border: none;
   background: none;
@@ -856,410 +899,482 @@ button:focus-visible {
   color: inherit;
   font: inherit;
   min-height: 48px;
-  transition: background var(--duration-fast);
+  transition: background var(--dur);
 }
 .dec-head:hover { background: rgba(255,255,255,0.015); }
 
 .dec-market {
   flex: 1;
-  font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--t1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
 }
 .dec-market a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px dashed rgba(255,255,255,0.12);
-  padding-bottom: 1px;
-  transition: border-color var(--duration-fast);
+  transition: color var(--dur);
 }
-.dec-market a:hover { border-bottom-color: var(--accent-green); }
+.dec-market a:hover { color: var(--violet); }
 
 .dec-meta {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: 14px;
   flex-shrink: 0;
 }
 .dec-meta-item {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: var(--t2);
   white-space: nowrap;
-  line-height: 1.5;
 }
-.dec-meta-item span { color: var(--text-tertiary); }
+.dec-meta-item span { color: var(--t3); }
 
 .dec-time {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  font-size: 11px;
+  color: var(--t3);
   flex-shrink: 0;
 }
 
 .dec-body {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s var(--ease-out);
-  border-top: 0px solid var(--border-subtle);
+  transition: max-height 0.4s var(--ease);
+  border-top: 0px solid var(--b1);
 }
 .dec-card.open .dec-body {
   max-height: 900px;
   border-top-width: 1px;
 }
 
-.dec-body-inner { padding: 0 var(--space-5) var(--space-5); }
+.dec-body-inner { padding: 0 20px 20px; }
 
 .dec-section-label {
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  margin: var(--space-4) 0 var(--space-2);
+  color: var(--t3);
+  margin: 14px 0 8px;
 }
 
 .signal-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border-subtle);
-  font-size: var(--text-sm);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--b1);
+  font-size: 13px;
   font-family: var(--font-mono);
-  line-height: 1.5;
 }
 .signal-row:last-child { border-bottom: none; }
-.signal-key { color: var(--text-secondary); }
-.signal-val-pos { color: var(--accent-green); }
-.signal-val-neg { color: var(--accent-red); }
-.signal-val-neu { color: var(--text-tertiary); }
+.signal-key { color: var(--t2); }
+.signal-val-pos { color: var(--emerald); }
+.signal-val-neg { color: var(--coral); }
+.signal-val-neu { color: var(--t3); }
 
 .dec-reasoning {
-  background: var(--surface-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
+  background: var(--s3);
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: 13px;
   line-height: 1.7;
-  color: var(--text-secondary);
-  border-left: 3px solid var(--border-default);
-  margin-top: var(--space-3);
+  color: var(--t2);
+  border-left: 3px solid var(--violet);
+  margin-top: 10px;
 }
 
 .bayes-row {
-  padding: var(--space-2) 0;
+  padding: 8px 0;
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-subtle);
-  line-height: 1.5;
+  font-size: 13px;
+  color: var(--t2);
+  border-bottom: 1px solid var(--b1);
 }
 .bayes-row:last-child { border-bottom: none; }
 
 .reject-reason {
-  background: var(--accent-red-dim);
-  border: 1px solid var(--accent-red-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-4);
+  background: var(--coral-dim);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--accent-red);
-  margin-top: var(--space-3);
+  font-size: 13px;
+  color: var(--coral);
+  margin-top: 10px;
   line-height: 1.6;
 }
 
-/* ── Conviction bar ── */
-.conv-bar-wrap { width: 64px; }
+/* Conviction bar */
+.conv-bar-wrap { width: 60px; }
 .bar-bg {
-  height: 3px;
-  background: var(--surface-4);
-  border-radius: var(--radius-pill);
+  height: 4px;
+  background: var(--s4);
+  border-radius: var(--r-pill);
   overflow: hidden;
   margin-top: 4px;
 }
 .bar-fill {
   height: 100%;
-  border-radius: var(--radius-pill);
-  animation: barGrow 0.8s var(--ease-out) both;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  animation: barGrow 0.8s var(--ease) both;
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    FILTERS
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .filter-group {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
+  gap: 6px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
 .filter-btn {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
+  padding: 7px 16px;
+  border-radius: var(--r-pill);
   cursor: pointer;
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1px solid var(--border-default);
-  background: var(--surface-2);
-  color: var(--text-tertiary);
-  transition: all var(--duration-fast);
-  min-height: 36px;
-  min-width: 44px;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--b2);
+  background: var(--s2);
+  color: var(--t3);
+  transition: all var(--dur) var(--ease);
+  min-height: 34px;
 }
 .filter-btn:hover {
-  border-color: var(--border-strong);
-  color: var(--text-secondary);
+  border-color: var(--b3);
+  color: var(--t2);
+  background: var(--s3);
 }
 .filter-btn[aria-pressed="true"] {
-  background: var(--accent-green-dim);
-  border-color: var(--accent-green-border);
-  color: var(--accent-green);
+  background: var(--violet-dim);
+  border-color: var(--violet-glow);
+  color: var(--violet);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    SYSTEM ROWS
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .sys-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border-subtle);
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--b1);
+  font-size: 13px;
 }
 .sys-row:last-child { border-bottom: none; }
 .sys-key {
-  color: var(--text-secondary);
+  color: var(--t2);
   font-family: var(--font-mono);
 }
 .sys-val {
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--t1);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE OVERRIDES
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .topbar { padding: 0 var(--space-4); gap: var(--space-3); }
-  .tb-pills { display: none; }
-  .page { padding: var(--space-4); }
-  .bet-stats { gap: var(--space-3); }
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0; bottom: 0;
+    z-index: 100;
+    transition: left var(--dur-slow) var(--ease);
+    box-shadow: none;
+  }
+  .sidebar.open {
+    left: 0;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.5);
+  }
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .sidebar.open ~ .mobile-overlay { display: block; }
+
+  .mobile-toggle {
+    display: flex !important;
+  }
+
+  .page { padding: 20px 16px 48px; }
+  .page-header { padding: 14px 16px; }
+  .bet-stats { gap: 10px; }
   .dec-meta { display: none; }
-  .logo-text { display: none; }
-  .tab-bar { padding: 0 var(--space-4); }
+}
+
+@media (min-width: 861px) {
+  .mobile-toggle { display: none !important; }
+  .mobile-overlay { display: none !important; }
 }
 
 @media (max-width: 480px) {
-  .kpi-value { font-size: var(--text-xl); }
-  .bet-card-head { padding: var(--space-3) var(--space-4); }
-  .bet-detail-inner { padding: 0 var(--space-4) var(--space-4); }
+  .hero-value { font-size: 24px; }
+  .hero-kpi { padding: 18px; }
+  .header-pills { display: none; }
+}
+
+/* Mobile menu button */
+.mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--b2);
+  border-radius: var(--r-sm);
+  background: var(--s2);
+  color: var(--t2);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 </style>
 </head>
 <body>
 
-<!-- Skip navigation for keyboard/screen reader users -->
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<div class="shell">
+<div class="app">
 
-<!-- ── TOPBAR ── -->
-<header class="topbar" role="banner">
-  <div class="logo" aria-label="PolyFarm">
-    <div class="logo-mark" aria-hidden="true">PF</div>
-    <div class="logo-text">POLYFARM</div>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+  <a class="sidebar-brand" href="#" onclick="return false" aria-label="PolyFarm Dashboard">
+    <div class="brand-icon" aria-hidden="true">PF</div>
+    <div>
+      <div class="brand-name">PolyFarm</div>
+      <div class="brand-sub">Quant Engine</div>
+    </div>
+  </a>
+
+  <div class="sidebar-status" role="status" aria-live="polite">
+    <div class="status-dot" aria-hidden="true"></div>
+    <span class="status-label">LIVE</span>
+    <span class="status-mode">PAPER</span>
   </div>
 
-  <div class="live-indicator" role="status" aria-live="polite" aria-label="System status: live">
-    <div class="live-dot" aria-hidden="true"></div>
-    <span class="live-label">LIVE</span>
+  <nav class="sidebar-nav" role="tablist" aria-label="Dashboard sections">
+    <div class="nav-label">Dashboard</div>
+    <button class="nav-btn" role="tab" aria-selected="true" data-tab="overview">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="11" y="2" width="5" height="5" rx="1"/><rect x="2" y="11" width="5" height="5" rx="1"/><rect x="11" y="11" width="5" height="5" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-tab="positions">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2"/></svg>
+      Positions
+      <span class="nav-count" id="tn-pos">0</span>
+    </button>
+
+    <div class="nav-label">Analytics</div>
+    <button class="nav-btn" role="tab" aria-selected="false" data-tab="history">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14l4-5 3 3 7-8"/><path d="M14 4h4v4"/></svg>
+      History
+      <span class="nav-count" id="tn-hist">0</span>
+    </button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-tab="decisions">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l2 4h4l-3 3 1 5-4-2-4 2 1-5-3-3h4z"/></svg>
+      Decisions
+      <span class="nav-count" id="tn-dec">0</span>
+    </button>
+
+    <div class="nav-label">System</div>
+    <button class="nav-btn" role="tab" aria-selected="false" data-tab="system">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M9 1v2m0 12v2m-6.36-3.64l1.42-1.42m9.9-9.9l1.42-1.42M1 9h2m12 0h2m-3.64 6.36l-1.42-1.42M4.06 4.06L2.64 2.64"/></svg>
+      Config
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-clock" id="sb-clock"></div>
   </div>
+</aside>
 
-  <div class="tb-pills" aria-label="Portfolio summary">
-    <div class="tb-pill">
-      <span class="tb-pill-label">Portfolio</span>
-      <span class="tb-pill-val" id="tb-value">—</span>
-    </div>
-    <div class="tb-pill">
-      <span class="tb-pill-label">Cash</span>
-      <span class="tb-pill-val" id="tb-cash">—</span>
-    </div>
-    <div class="tb-pill">
-      <span class="tb-pill-label">P&amp;L</span>
-      <span class="tb-pill-val" id="tb-pl">—</span>
-    </div>
-  </div>
+<div class="mobile-overlay" id="mobile-overlay"></div>
 
-  <div class="tb-right">
-    <span class="tb-badge" role="status">PAPER MODE</span>
-    <time class="tb-clock" id="tb-time" aria-label="Current time"></time>
-  </div>
-</header>
-
-<!-- ── TAB BAR ── -->
-<nav class="tab-bar" role="tablist" aria-label="Dashboard sections">
-  <button class="tab-btn" role="tab" aria-selected="true" aria-controls="page-overview" id="tab-overview" data-tab="overview">Overview</button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="page-positions" id="tab-positions" data-tab="positions">Positions <span class="tab-count" id="tn-pos">0</span></button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="page-history" id="tab-history" data-tab="history">History <span class="tab-count" id="tn-hist">0</span></button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="page-decisions" id="tab-decisions" data-tab="decisions">Decisions <span class="tab-count" id="tn-dec">0</span></button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="page-system" id="tab-system" data-tab="system">System</button>
-</nav>
-
-<!-- ── CONTENT ── -->
-<main class="content-area" id="main-content">
-
-  <!-- ════ OVERVIEW ════ -->
-  <section class="page" id="page-overview" role="tabpanel" aria-labelledby="tab-overview" aria-hidden="false">
-    <div class="grid-4 mb-5">
-      <article class="kpi stagger" aria-label="Portfolio value">
-        <div class="kpi-label">Portfolio Value</div>
-        <div class="kpi-value" id="ov-val" aria-live="polite">—</div>
-        <div class="kpi-sub" id="ov-val-sub">—</div>
-      </article>
-      <article class="kpi stagger accent-red" aria-label="Net profit and loss">
-        <div class="kpi-label">Net P&amp;L</div>
-        <div class="kpi-value" id="ov-pl" aria-live="polite">—</div>
-        <div class="kpi-sub" id="ov-pl-sub">—</div>
-      </article>
-      <article class="kpi stagger" aria-label="Win rate">
-        <div class="kpi-label">Win Rate</div>
-        <div class="kpi-value" id="ov-wr" aria-live="polite">—</div>
-        <div class="kpi-sub" id="ov-wr-sub">—</div>
-      </article>
-      <article class="kpi stagger accent-blue" aria-label="Capital deployed">
-        <div class="kpi-label">Deployed</div>
-        <div class="kpi-value" id="ov-exp" aria-live="polite">—</div>
-        <div class="kpi-sub" id="ov-exp-sub">—</div>
-      </article>
-    </div>
-
-    <div class="grid-2 mb-5">
-      <div class="card stagger">
-        <div class="card-header">
-          <h2 class="card-title">Equity Curve</h2>
-          <span class="card-sub" id="ov-chart-sub"></span>
-        </div>
-        <div class="card-body chart-wrap" style="height:220px">
-          <canvas id="chart-equity" aria-label="Equity curve chart showing portfolio value over time" role="img"></canvas>
-        </div>
-      </div>
-      <div class="card stagger">
-        <div class="card-header">
-          <h2 class="card-title">P&amp;L per Bet</h2>
-          <span class="card-sub" id="ov-pl-chart-sub"></span>
-        </div>
-        <div class="card-body chart-wrap" style="height:220px">
-          <canvas id="chart-pl" aria-label="Bar chart showing profit and loss per bet" role="img"></canvas>
-        </div>
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <header class="page-header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="Open navigation">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h12M3 9h12M3 13h12"/></svg>
+      </button>
+      <div class="page-title-area">
+        <h1 class="page-title" id="current-page-title">Overview</h1>
+        <span class="page-subtitle" id="current-page-sub"></span>
       </div>
     </div>
-
-    <div class="card stagger">
-      <div class="card-header">
-        <h2 class="card-title">Recent Activity</h2>
-        <span class="card-sub" id="ov-last-scan">—</span>
+    <div class="header-pills">
+      <div class="h-pill">
+        <span class="h-pill-label">Value</span>
+        <span id="tb-value" style="font-weight:600">—</span>
       </div>
-      <div id="ov-activity" role="list" aria-label="Recent trading activity"></div>
-    </div>
-  </section>
-
-  <!-- ════ POSITIONS ════ -->
-  <section class="page" id="page-positions" role="tabpanel" aria-labelledby="tab-positions" aria-hidden="true">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5)">
-      <p class="mono" style="font-size:var(--text-sm);color:var(--text-secondary)" id="pos-summary"></p>
-    </div>
-    <div id="positions-list" aria-label="Open positions"></div>
-  </section>
-
-  <!-- ════ HISTORY ════ -->
-  <section class="page" id="page-history" role="tabpanel" aria-labelledby="tab-history" aria-hidden="true">
-    <p class="mono mb-5" style="font-size:var(--text-sm);color:var(--text-secondary)" id="hist-summary"></p>
-    <div class="card" style="overflow:auto;padding:0">
-      <table class="data-table" id="hist-table" aria-label="Closed bets history">
-        <thead>
-          <tr>
-            <th scope="col">Market</th>
-            <th scope="col">Pos</th>
-            <th scope="col">Stake</th>
-            <th scope="col">Payout</th>
-            <th scope="col">P&amp;L</th>
-            <th scope="col">Edge</th>
-            <th scope="col">Result</th>
-            <th scope="col">Closed</th>
-          </tr>
-        </thead>
-        <tbody id="hist-body"></tbody>
-      </table>
-      <div class="empty-state" id="hist-empty">
-        <div class="empty-state-icon" aria-hidden="true">&#x1F4CA;</div>
-        <div class="empty-state-msg">No closed bets yet</div>
-        <div class="empty-state-sub">Results will appear here after bets resolve</div>
+      <div class="h-pill">
+        <span class="h-pill-label">Cash</span>
+        <span id="tb-cash" style="font-weight:600">—</span>
+      </div>
+      <div class="h-pill">
+        <span class="h-pill-label">P&amp;L</span>
+        <span id="tb-pl" style="font-weight:600">—</span>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- ════ DECISIONS ════ -->
-  <section class="page" id="page-decisions" role="tabpanel" aria-labelledby="tab-decisions" aria-hidden="true">
-    <div class="filter-group" role="group" aria-label="Filter decisions">
-      <button class="filter-btn" aria-pressed="true" data-filter="all">All</button>
-      <button class="filter-btn" aria-pressed="false" data-filter="bet">Bets</button>
-      <button class="filter-btn" aria-pressed="false" data-filter="skip">Skips</button>
-      <button class="filter-btn" aria-pressed="false" data-filter="edge">Edge &gt;8%</button>
-    </div>
-    <p class="mono" style="font-size:var(--text-xs);color:var(--text-tertiary);margin-bottom:var(--space-4)" id="dec-summary"></p>
-    <div id="decisions-list" aria-label="Decision log"></div>
-  </section>
+  <div class="content" id="main-content">
 
-  <!-- ════ SYSTEM ════ -->
-  <section class="page" id="page-system" role="tabpanel" aria-labelledby="tab-system" aria-hidden="true">
-    <div class="grid-2">
-      <div>
-        <div class="card mb-4">
-          <div class="card-header"><h2 class="card-title">Scanner Config</h2></div>
-          <div class="card-body" id="sys-config"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h2 class="card-title">Portfolio State</h2></div>
-          <div class="card-body" id="sys-portfolio"></div>
-        </div>
+    <!-- ════ OVERVIEW ════ -->
+    <section class="page active" id="page-overview" role="tabpanel" aria-hidden="false">
+      <div class="hero-grid mb-6">
+        <article class="hero-kpi stagger" aria-label="Portfolio value">
+          <div class="hero-label">Portfolio Value</div>
+          <div class="hero-value" id="ov-val" aria-live="polite">—</div>
+          <div class="hero-sub" id="ov-val-sub">—</div>
+        </article>
+        <article class="hero-kpi stagger accent-coral" aria-label="Net P&L">
+          <div class="hero-label">Net P&amp;L</div>
+          <div class="hero-value" id="ov-pl" aria-live="polite">—</div>
+          <div class="hero-sub" id="ov-pl-sub">—</div>
+        </article>
+        <article class="hero-kpi stagger accent-emerald" aria-label="Win rate">
+          <div class="hero-label">Win Rate</div>
+          <div class="hero-value" id="ov-wr" aria-live="polite">—</div>
+          <div class="hero-sub" id="ov-wr-sub">—</div>
+        </article>
+        <article class="hero-kpi stagger accent-cyan" aria-label="Capital deployed">
+          <div class="hero-label">Deployed</div>
+          <div class="hero-value" id="ov-exp" aria-live="polite">—</div>
+          <div class="hero-sub" id="ov-exp-sub">—</div>
+        </article>
       </div>
-      <div>
-        <div class="card mb-4">
-          <div class="card-header"><h2 class="card-title">Edge Distribution</h2></div>
-          <div class="card-body chart-wrap" style="height:200px">
-            <canvas id="chart-edge" aria-label="Histogram showing edge distribution across analyzed markets" role="img"></canvas>
+
+      <div class="grid-2 mb-5">
+        <div class="card stagger">
+          <div class="card-head">
+            <h2 class="card-title">Equity Curve</h2>
+            <span class="card-badge" id="ov-chart-sub"></span>
+          </div>
+          <div class="card-body chart-wrap" style="height:240px">
+            <canvas id="chart-equity" aria-label="Equity curve chart" role="img"></canvas>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><h2 class="card-title">Signal Performance</h2></div>
-          <div class="card-body" id="sys-signals"></div>
+        <div class="card stagger">
+          <div class="card-head">
+            <h2 class="card-title">P&amp;L per Bet</h2>
+            <span class="card-badge" id="ov-pl-chart-sub"></span>
+          </div>
+          <div class="card-body chart-wrap" style="height:240px">
+            <canvas id="chart-pl" aria-label="P&L per bet bar chart" role="img"></canvas>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-</main>
-</div><!-- /shell -->
+      <div class="card stagger">
+        <div class="card-head">
+          <h2 class="card-title">Recent Activity</h2>
+          <span class="card-badge" id="ov-last-scan">—</span>
+        </div>
+        <div id="ov-activity" role="list" aria-label="Recent activity"></div>
+      </div>
+    </section>
+
+    <!-- ════ POSITIONS ════ -->
+    <section class="page" id="page-positions" role="tabpanel" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <p class="mono" style="font-size:13px;color:var(--t2)" id="pos-summary"></p>
+      </div>
+      <div id="positions-list" aria-label="Open positions"></div>
+    </section>
+
+    <!-- ════ HISTORY ════ -->
+    <section class="page" id="page-history" role="tabpanel" aria-hidden="true">
+      <p class="mono mb-5" style="font-size:13px;color:var(--t2)" id="hist-summary"></p>
+      <div class="card" style="overflow:auto;padding:0">
+        <table class="data-table" id="hist-table" aria-label="Closed bets history">
+          <thead>
+            <tr>
+              <th scope="col">Market</th>
+              <th scope="col">Pos</th>
+              <th scope="col">Stake</th>
+              <th scope="col">Payout</th>
+              <th scope="col">P&amp;L</th>
+              <th scope="col">Edge</th>
+              <th scope="col">Result</th>
+              <th scope="col">Closed</th>
+            </tr>
+          </thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+        <div class="empty-state" id="hist-empty">
+          <div class="empty-state-icon" aria-hidden="true">&#x1F4CA;</div>
+          <div class="empty-state-msg">No closed bets yet</div>
+          <div class="empty-state-sub">Results will appear here after bets resolve</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ DECISIONS ════ -->
+    <section class="page" id="page-decisions" role="tabpanel" aria-hidden="true">
+      <div class="filter-group" role="group" aria-label="Filter decisions">
+        <button class="filter-btn" aria-pressed="true" data-filter="all">All</button>
+        <button class="filter-btn" aria-pressed="false" data-filter="bet">Bets</button>
+        <button class="filter-btn" aria-pressed="false" data-filter="skip">Skips</button>
+        <button class="filter-btn" aria-pressed="false" data-filter="edge">Edge &gt;8%</button>
+      </div>
+      <p class="mono" style="font-size:12px;color:var(--t3);margin-bottom:14px" id="dec-summary"></p>
+      <div id="decisions-list" aria-label="Decision log"></div>
+    </section>
+
+    <!-- ════ SYSTEM ════ -->
+    <section class="page" id="page-system" role="tabpanel" aria-hidden="true">
+      <div class="grid-2">
+        <div>
+          <div class="card mb-4">
+            <div class="card-head"><h2 class="card-title">Scanner Config</h2></div>
+            <div class="card-body" id="sys-config"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Portfolio State</h2></div>
+            <div class="card-body" id="sys-portfolio"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-head"><h2 class="card-title">Edge Distribution</h2></div>
+            <div class="card-body chart-wrap" style="height:220px">
+              <canvas id="chart-edge" aria-label="Edge distribution histogram" role="img"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Signal Performance</h2></div>
+            <div class="card-body" id="sys-signals"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</div><!-- /app -->
 
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // HELPERS
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 const $ = id => document.getElementById(id);
 const f2 = n => (+n).toFixed(2);
 const f1 = n => (+n).toFixed(1);
@@ -1277,32 +1392,27 @@ const fmtDate = s => {
 const pmUrl = slug => slug ? `https://polymarket.com/market/${slug}` : null;
 
 function timeLeft(endDate) {
-  if (!endDate) return { label:'\u2014', color:'var(--text-tertiary)' };
+  if (!endDate) return { label:'\u2014', color:'var(--t3)' };
   const s = (new Date(endDate) - Date.now()) / 1000;
-  if (s <= 0) return { label:'EXPIRED', color:'var(--text-tertiary)' };
-  if (s < 3600) return { label: Math.floor(s/60)+'m', color:'var(--accent-red)' };
-  if (s < 86400) return { label: f1(s/3600)+'h', color:'var(--accent-red)' };
-  return { label: f1(s/86400)+'d', color:'var(--accent-green)' };
+  if (s <= 0) return { label:'EXPIRED', color:'var(--t3)' };
+  if (s < 3600) return { label: Math.floor(s/60)+'m', color:'var(--coral)' };
+  if (s < 86400) return { label: f1(s/3600)+'h', color:'var(--coral)' };
+  return { label: f1(s/86400)+'d', color:'var(--emerald)' };
 }
 
-// ── Number counter animation ──
 function animateNum(el, target, prefix, decimals) {
   prefix = prefix || '\u20AC';
   decimals = decimals != null ? decimals : 2;
-
-  // Respect reduced motion
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     el.textContent = prefix + target.toFixed(decimals);
     return;
   }
-
   const start = performance.now();
-  const dur = 700;
-  const easeOutQuart = t => 1 - Math.pow(1-t, 4);
+  const dur = 800;
+  const ease = t => 1 - Math.pow(1-t, 4);
   const run = now => {
     const p = Math.min((now-start)/dur, 1);
-    const v = target * easeOutQuart(p);
-    el.textContent = prefix + v.toFixed(decimals);
+    el.textContent = prefix + (target * ease(p)).toFixed(decimals);
     if (p < 1) requestAnimationFrame(run);
     else el.textContent = prefix + target.toFixed(decimals);
   };
@@ -1313,19 +1423,17 @@ function animateNumSigned(el, target, prefix, decimals) {
   prefix = prefix || '\u20AC';
   decimals = decimals != null ? decimals : 2;
   const cls = target >= 0 ? 'clr-green' : 'clr-red';
-
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const s = target >= 0 ? '+' : '';
     el.innerHTML = `<span class="${cls}">${s}${prefix}${Math.abs(target).toFixed(decimals)}</span>`;
     return;
   }
-
   const start = performance.now();
-  const dur = 700;
-  const easeOutQuart = t => 1 - Math.pow(1-t, 4);
+  const dur = 800;
+  const ease = t => 1 - Math.pow(1-t, 4);
   const run = now => {
     const p = Math.min((now-start)/dur, 1);
-    const v = target * easeOutQuart(p);
+    const v = target * ease(p);
     const s = v >= 0 ? '+' : '';
     el.innerHTML = `<span class="${cls}">${s}${prefix}${Math.abs(v).toFixed(decimals)}</span>`;
     if (p < 1) requestAnimationFrame(run);
@@ -1337,9 +1445,9 @@ function animateNumSigned(el, target, prefix, decimals) {
   requestAnimationFrame(run);
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // DATA
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 const cash = +(PORTFOLIO.cash || 0);
 const startCap = +(PORTFOLIO.starting_capital || 100);
 const openBets = PORTFOLIO.open_bets || [];
@@ -1352,101 +1460,109 @@ const losses = closedBets.filter(b => b.result==='LOST').length;
 const winRate = closedBets.length ? wins/closedBets.length*100 : 0;
 const plPct = (portfolioVal - startCap) / startCap * 100;
 
-// ── Chart theme ──
+// Chart theme
 const chartColors = {
-  grid: 'rgba(255,255,255,0.04)',
-  tick: '#6e6e80',
-  green: '#34d399',
-  greenFill: 'rgba(52,211,153,0.15)',
-  greenBorder: 'rgba(52,211,153,0.6)',
-  red: '#f87171',
-  redFill: 'rgba(248,113,113,0.15)',
-  redBorder: 'rgba(248,113,113,0.6)',
+  grid: 'rgba(255,255,255,0.03)',
+  tick: '#6b6b88',
+  violet: '#8b5cf6',
+  violetFill: 'rgba(139,92,246,0.15)',
+  violetBorder: 'rgba(139,92,246,0.6)',
+  green: '#10b981',
+  greenFill: 'rgba(16,185,129,0.12)',
+  greenBorder: 'rgba(16,185,129,0.5)',
+  red: '#ff6b6b',
+  redFill: 'rgba(255,107,107,0.12)',
+  redBorder: 'rgba(255,107,107,0.5)',
+  cyan: '#06b6d4',
+  cyanFill: 'rgba(6,182,212,0.12)',
   tooltip: {
-    bg: '#181820',
-    border: 'rgba(52,211,153,0.25)',
+    bg: '#1a1a2e',
+    border: 'rgba(139,92,246,0.3)',
     titleFont: { family: 'JetBrains Mono', size: 10 },
     bodyFont: { family: 'JetBrains Mono', size: 14, weight: '700' },
     padding: 14,
-    cornerRadius: 6,
+    cornerRadius: 8,
   }
 };
 
-// ══════════════════════════════════════════════
-// TOPBAR
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
+// HEADER
+// ══════════════════════════════════════
 animateNum($('tb-value'), portfolioVal);
 animateNum($('tb-cash'), cash);
 animateNumSigned($('tb-pl'), totalPL);
 
 const tick = () => {
   const d = new Date();
-  $('tb-time').textContent = d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  $('sb-clock').textContent = d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 };
 tick(); setInterval(tick, 1000);
 
-// ── Tab badges ──
 $('tn-pos').textContent = openBets.length;
 $('tn-hist').textContent = closedBets.length;
 $('tn-dec').textContent = DECISIONS.length;
 
-// ══════════════════════════════════════════════
-// TAB ROUTING (accessible)
-// ══════════════════════════════════════════════
-const tabBtns = document.querySelectorAll('.tab-btn');
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+const navBtns = document.querySelectorAll('.nav-btn');
 const pages = document.querySelectorAll('.page');
+const pageTitles = {
+  overview: 'Overview',
+  positions: 'Positions',
+  history: 'History',
+  decisions: 'Decisions',
+  system: 'Config'
+};
 
 function switchTab(tabId) {
-  tabBtns.forEach(t => t.setAttribute('aria-selected', 'false'));
+  navBtns.forEach(t => t.setAttribute('aria-selected', 'false'));
   pages.forEach(p => {
+    p.classList.remove('active');
     p.setAttribute('aria-hidden', 'true');
-    p.style.animation = 'none';
   });
 
-  const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+  const btn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
   const page = $('page-' + tabId);
   if (btn) btn.setAttribute('aria-selected', 'true');
   if (page) {
+    page.classList.add('active');
     page.setAttribute('aria-hidden', 'false');
-    void page.offsetWidth; // reflow to retrigger animation
-    page.style.animation = '';
   }
+  $('current-page-title').textContent = pageTitles[tabId] || tabId;
+
+  // Close mobile sidebar
+  $('sidebar').classList.remove('open');
 }
 
-tabBtns.forEach(tab => {
-  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// Keyboard navigation for tabs (arrow keys)
-document.querySelector('.tab-bar').addEventListener('keydown', e => {
-  const tabs = [...tabBtns];
-  const idx = tabs.indexOf(document.activeElement);
+// Keyboard nav
+document.querySelector('.sidebar-nav').addEventListener('keydown', e => {
+  const btns = [...navBtns];
+  const idx = btns.indexOf(document.activeElement);
   if (idx === -1) return;
   let next;
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    next = tabs[(idx + 1) % tabs.length];
-  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-    e.preventDefault();
-    next = tabs[(idx - 1 + tabs.length) % tabs.length];
-  } else if (e.key === 'Home') {
-    e.preventDefault();
-    next = tabs[0];
-  } else if (e.key === 'End') {
-    e.preventDefault();
-    next = tabs[tabs.length - 1];
-  }
-  if (next) {
-    next.focus();
-    next.click();
-  }
+  if (e.key === 'ArrowDown') { e.preventDefault(); next = btns[(idx + 1) % btns.length]; }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); next = btns[(idx - 1 + btns.length) % btns.length]; }
+  if (next) { next.focus(); next.click(); }
 });
 
-// ══════════════════════════════════════════════
+// Mobile toggle
+$('mobile-toggle').addEventListener('click', () => {
+  $('sidebar').classList.toggle('open');
+});
+$('mobile-overlay').addEventListener('click', () => {
+  $('sidebar').classList.remove('open');
+});
+
+// ══════════════════════════════════════
 // OVERVIEW
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 animateNum($('ov-val'), portfolioVal);
-$('ov-val').className = 'kpi-value ' + clr(portfolioVal - startCap);
+$('ov-val').className = 'hero-value ' + clr(portfolioVal - startCap);
 $('ov-val-sub').textContent = `Start \u20AC${f2(startCap)} \u00B7 ${f1(portfolioVal/startCap*100)}% of capital`;
 
 animateNumSigned($('ov-pl'), totalPL);
@@ -1461,10 +1577,10 @@ if (closedBets.length) {
 $('ov-wr-sub').textContent = `${wins}W \u00B7 ${losses}L \u00B7 ${closedBets.length} settled`;
 
 animateNum($('ov-exp'), exposure);
-$('ov-exp').className = 'kpi-value clr-blue';
+$('ov-exp').className = 'hero-value clr-blue';
 $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(cash)} free`;
 
-// ── Equity chart ──
+// Equity chart
 (function() {
   const labels = ['Start'], vals = [startCap];
   let run = startCap;
@@ -1479,29 +1595,32 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
   $('ov-chart-sub').textContent = (vals.length-1) + ' data points';
 
   const ctx = $('chart-equity').getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-  gradient.addColorStop(0, chartColors.greenFill);
+  const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+  gradient.addColorStop(0, chartColors.violetFill);
+  gradient.addColorStop(0.6, 'rgba(6,182,212,0.06)');
   gradient.addColorStop(1, 'transparent');
 
   new Chart(ctx, {
     type: 'line',
     data: { labels, datasets: [{
       data: vals,
-      borderColor: chartColors.green,
-      borderWidth: 2,
-      tension: 0.35,
+      borderColor: chartColors.violet,
+      borderWidth: 2.5,
+      tension: 0.4,
       pointRadius: 4,
-      pointBackgroundColor: chartColors.green,
-      pointBorderColor: '#12121a',
+      pointBackgroundColor: chartColors.violet,
+      pointBorderColor: '#131320',
       pointBorderWidth: 2,
       pointHoverRadius: 7,
-      pointHoverBackgroundColor: chartColors.green,
-      pointHoverBorderColor: '#06060a',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: chartColors.violet,
+      pointHoverBorderWidth: 2,
       fill: true,
       backgroundColor: gradient,
     }] },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: { duration: 1200, easing: 'easeOutQuart' },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1524,7 +1643,7 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
   });
 })();
 
-// ── P&L per bet chart ──
+// P&L per bet chart
 (function() {
   if (!closedBets.length) {
     $('chart-pl').parentElement.innerHTML = '<div class="empty-state"><div class="empty-state-icon" aria-hidden="true">&#x1F4C8;</div><div class="empty-state-msg">No closed bets</div><div class="empty-state-sub">Chart appears after first resolution</div></div>';
@@ -1541,10 +1660,11 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
       backgroundColor: vals.map(v => v>=0 ? chartColors.greenFill : chartColors.redFill),
       borderColor: vals.map(v => v>=0 ? chartColors.greenBorder : chartColors.redBorder),
       borderWidth: 1,
-      borderRadius: 4,
+      borderRadius: 6,
     }] },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: { duration: 1000, easing: 'easeOutQuart' },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1567,23 +1687,23 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
   });
 })();
 
-// ── Recent activity ──
+// Recent activity
 (function() {
   const items = [];
   openBets.forEach(b => items.push({
     t: b.placed_at,
-    html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:var(--text-sm);min-height:44px"><span style="color:var(--text-secondary);line-height:1.5">${trunc(b.market||'',60)}</span><span class="pill pill-open" style="flex-shrink:0;margin-left:var(--space-4)">OPEN \u00B7 \u20AC${+(b.stake||0).toFixed(2)}</span></div>`
+    html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid var(--b1);font-family:var(--font-mono);font-size:13px;min-height:44px;transition:background 200ms"><span style="color:var(--t2)">${trunc(b.market||'',60)}</span><span class="pill pill-open" style="flex-shrink:0;margin-left:14px">OPEN \u00B7 \u20AC${+(b.stake||0).toFixed(2)}</span></div>`
   }));
   closedBets.forEach(b => {
     const p = +(b.pl||0);
     items.push({
       t: b.resolved_at||b.placed_at,
-      html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:var(--text-sm);min-height:44px"><span style="color:var(--text-secondary);line-height:1.5">${trunc(b.market||'',60)}</span><span class="pill ${p>=0?'pill-won':'pill-lost'}" style="flex-shrink:0;margin-left:var(--space-4)">${p>=0?'WON':'LOST'} ${p>=0?'+':''}\u20AC${Math.abs(p).toFixed(2)}</span></div>`
+      html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid var(--b1);font-family:var(--font-mono);font-size:13px;min-height:44px"><span style="color:var(--t2)">${trunc(b.market||'',60)}</span><span class="pill ${p>=0?'pill-won':'pill-lost'}" style="flex-shrink:0;margin-left:14px">${p>=0?'WON':'LOST'} ${p>=0?'+':''}\u20AC${Math.abs(p).toFixed(2)}</span></div>`
     });
   });
   DECISIONS.slice(-8).forEach(d => items.push({
     t: d.timestamp,
-    html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:var(--text-xs);min-height:44px"><span style="color:var(--text-tertiary);line-height:1.5">${d.approved?'BET':'SKIP'} ${trunc(d.market_q||d.question||'',55)}</span><span style="color:var(--text-tertiary);font-size:var(--text-xs);flex-shrink:0;margin-left:var(--space-4)">${fmtDate(d.timestamp)}</span></div>`
+    html: `<div role="listitem" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid var(--b1);font-family:var(--font-mono);font-size:12px;min-height:44px"><span style="color:var(--t3)">${d.approved?'BET':'SKIP'} ${trunc(d.market_q||d.question||'',55)}</span><span style="color:var(--t3);font-size:11px;flex-shrink:0;margin-left:14px">${fmtDate(d.timestamp)}</span></div>`
   }));
   items.sort((a,b) => (b.t||'')>(a.t||'') ? 1 : -1);
   const el = $('ov-activity');
@@ -1596,9 +1716,9 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
   $('ov-last-scan').textContent = lastDec ? 'Last scan: '+fmtDate(lastDec.timestamp) : 'Waiting\u2026';
 })();
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // POSITIONS
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 (function() {
   $('pos-summary').textContent = `${openBets.length} open \u00B7 \u20AC${f2(exposure)} deployed \u00B7 \u20AC${f2(cash)} cash`;
   const el = $('positions-list');
@@ -1639,7 +1759,7 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
             <div class="bet-stat-lbl">Left</div>
           </div>
           <div class="bet-stat">
-            <span class="pill ${confClass}" style="font-size:var(--text-xs)">${conf}</span>
+            <span class="pill ${confClass}" style="font-size:11px">${conf}</span>
             <div class="bet-stat-lbl" style="margin-top:2px">Conf</div>
           </div>
         </div>
@@ -1666,7 +1786,7 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
             </div>
           </div>
           ${b.reasoning ? `<div class="bet-reasoning">${b.reasoning}</div>` : ''}
-          ${url ? `<div style="margin-top:var(--space-4)"><a href="${url}" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--accent-green);text-decoration:none;border-bottom:1px dashed rgba(52,211,153,0.4);padding-bottom:2px">View on Polymarket \u2197</a></div>` : ''}
+          ${url ? `<div style="margin-top:14px"><a href="${url}" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:12px;color:var(--violet);text-decoration:none;border-bottom:1px dashed rgba(139,92,246,0.4);padding-bottom:2px;transition:color 200ms">View on Polymarket \u2197</a></div>` : ''}
         </div>
       </div>
     </article>`;
@@ -1676,13 +1796,12 @@ $('ov-exp-sub').textContent = `${openBets.length} positions \u00B7 \u20AC${f2(ca
 window.toggleBet = function(i) {
   const card = $('bc-'+i);
   const isOpen = card.classList.toggle('open');
-  const head = card.querySelector('.bet-card-head');
-  head.setAttribute('aria-expanded', isOpen);
+  card.querySelector('.bet-card-head').setAttribute('aria-expanded', isOpen);
 };
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // HISTORY
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 (function() {
   const totalReturn = closedBets.reduce((s,b) => s + +(b.pl||0), 0);
   $('hist-summary').textContent = `${closedBets.length} bets \u00B7 ${wins}W ${losses}L \u00B7 total ${sign(totalReturn)}\u20AC${f2(Math.abs(totalReturn))}`;
@@ -1692,14 +1811,13 @@ window.toggleBet = function(i) {
     return;
   }
   $('hist-empty').style.display = 'none';
-  const tbody = $('hist-body');
-  tbody.innerHTML = [...closedBets].reverse().map(b => {
+  $('hist-body').innerHTML = [...closedBets].reverse().map(b => {
     const pl = +(b.pl||0);
     const edge = ((+(b.estimated_prob||0) - +(b.entry_price||0))*100);
     const slug = b.slug || b.market_slug || '';
     const url = pmUrl(slug);
     const mktCell = url
-      ? `<a href="${url}" target="_blank" rel="noopener"><span class="link-text">${trunc(b.market||'',50)}</span> <span style="color:var(--text-tertiary);font-size:var(--text-xs)" aria-hidden="true">\u2197</span></a>`
+      ? `<a href="${url}" target="_blank" rel="noopener"><span class="link-text">${trunc(b.market||'',50)}</span> <span style="color:var(--t3);font-size:11px" aria-hidden="true">\u2197</span></a>`
       : trunc(b.market||'',50);
     return `<tr>
       <td class="col-main">${mktCell}</td>
@@ -1714,12 +1832,11 @@ window.toggleBet = function(i) {
   }).join('');
 })();
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // DECISIONS
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 let decFilter = 'all';
 
-// Filter buttons
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     decFilter = this.dataset.filter;
@@ -1752,7 +1869,7 @@ function renderDecisions() {
     const posterior = d.posterior != null ? (d.posterior*100).toFixed(0)+'%' : '\u2014';
     const mktPrice = d.price != null ? (d.price*100).toFixed(0)+'\u00A2' : '\u2014';
     const marketText = url
-      ? `<a href="${url}" target="_blank" rel="noopener">${trunc(d.market_q||d.question||'\u2014', 70)}<span style="color:var(--text-tertiary);font-size:var(--text-xs);margin-left:4px" aria-hidden="true">\u2197</span></a>`
+      ? `<a href="${url}" target="_blank" rel="noopener">${trunc(d.market_q||d.question||'\u2014', 70)}<span style="color:var(--t3);font-size:11px;margin-left:4px" aria-hidden="true">\u2197</span></a>`
       : trunc(d.market_q||d.question||'\u2014', 70);
     const signals = d.signal_breakdown || {};
     const bayes = d.bayes_updates || [];
@@ -1766,7 +1883,7 @@ function renderDecisions() {
           <div class="dec-meta-item"><span>model </span><span class="${approved?'clr-blue':''}">${posterior}</span></div>
           <div class="dec-meta-item"><span>edge </span><span class="${edge>=6?'clr-green':'clr-red'}">${edge>=0?'+':''}${f1(edge)}%</span></div>
           <div class="conv-bar-wrap" aria-label="Conviction: ${Math.round(conv)}%">
-            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(conv,100)}%;background:${approved?'var(--accent-green)':'var(--surface-4)'}"></div></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(conv,100)}%;${approved?'':'background:var(--s4)'}"></div></div>
           </div>
         </div>
         <div class="dec-time">${fmtDate(d.timestamp)}</div>
@@ -1787,13 +1904,12 @@ renderDecisions();
 window.toggleDec = function(i) {
   const card = $('dc-'+i);
   const isOpen = card.classList.toggle('open');
-  const head = card.querySelector('.dec-head');
-  head.setAttribute('aria-expanded', isOpen);
+  card.querySelector('.dec-head').setAttribute('aria-expanded', isOpen);
 };
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 // SYSTEM
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════
 (function() {
   $('sys-config').innerHTML = [
     ['Model', 'Claude Opus 4'],
@@ -1834,14 +1950,15 @@ window.toggleDec = function(i) {
         labels: ['0-5','5-10','10-15','15-20','20-25','25-30','30-35','35-40','40-45','45+'],
         datasets: [{
           data: buckets,
-          backgroundColor: chartColors.greenFill,
-          borderColor: chartColors.greenBorder,
+          backgroundColor: chartColors.violetFill,
+          borderColor: chartColors.violetBorder,
           borderWidth: 1,
-          borderRadius: 4,
+          borderRadius: 6,
         }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        animation: { duration: 1000, easing: 'easeOutQuart' },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -1852,7 +1969,7 @@ window.toggleDec = function(i) {
             titleFont: chartColors.tooltip.titleFont,
             bodyFont: { family: 'JetBrains Mono', size: 13, weight: '600' },
             padding: 12,
-            cornerRadius: 6,
+            cornerRadius: 8,
             displayColors: false,
           }
         },
@@ -1863,7 +1980,7 @@ window.toggleDec = function(i) {
       }
     });
   } else {
-    $('chart-edge').parentElement.innerHTML = '<div class="empty-state" style="padding:var(--space-8) 0"><div class="empty-state-msg">No edge data yet</div></div>';
+    $('chart-edge').parentElement.innerHTML = '<div class="empty-state" style="padding:32px 0"><div class="empty-state-msg">No edge data yet</div></div>';
   }
 
   // Signal performance
@@ -1883,12 +2000,13 @@ window.toggleDec = function(i) {
   const sigEl = $('sys-signals');
   const sigEntries = Object.entries(sigCounts).filter(([,v])=>v.tot>0).sort((a,b)=>b[1].pos/b[1].tot - a[1].pos/a[1].tot);
   if (!sigEntries.length) {
-    sigEl.innerHTML = '<div class="empty-state" style="padding:var(--space-6) 0"><div class="empty-state-msg">No signal data</div></div>';
+    sigEl.innerHTML = '<div class="empty-state" style="padding:24px 0"><div class="empty-state-msg">No signal data</div></div>';
     return;
   }
   sigEl.innerHTML = sigEntries.slice(0,8).map(([k,v]) => {
     const pctVal = Math.round(v.pos/v.tot*100);
-    return `<div class="sys-row"><span class="sys-key">${k}</span><span style="display:flex;align-items:center;gap:var(--space-3)"><span class="mono" style="font-size:var(--text-xs);color:var(--text-tertiary)">${pctVal}%</span><div style="width:80px;height:3px;background:var(--surface-4);border-radius:var(--radius-pill);overflow:hidden"><div style="width:${pctVal}%;height:100%;background:var(--accent-green);border-radius:var(--radius-pill);animation:barGrow 0.8s var(--ease-out) both"></div></div><span class="mono clr-muted" style="font-size:var(--text-xs)">${v.tot}</span></span></div>`;
+    const barColor = pctVal >= 60 ? 'var(--emerald)' : pctVal >= 40 ? 'var(--cyan)' : 'var(--coral)';
+    return `<div class="sys-row"><span class="sys-key">${k}</span><span style="display:flex;align-items:center;gap:10px"><span class="mono" style="font-size:12px;color:var(--t3)">${pctVal}%</span><div style="width:80px;height:4px;background:var(--s4);border-radius:var(--r-pill);overflow:hidden"><div style="width:${pctVal}%;height:100%;background:${barColor};border-radius:var(--r-pill);animation:barGrow 0.8s var(--ease) both"></div></div><span class="mono clr-muted" style="font-size:11px">${v.tot}</span></span></div>`;
   }).join('');
 })();
 </script>
