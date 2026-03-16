@@ -13,7 +13,6 @@
 <script>
 const PORTFOLIO = {"starting_capital": 200, "cash": 0.0, "open_bets": [{"id": "bet_001", "market": "Will the price of Bitcoin be above $72,000 on March 18?", "market_id": "1559486", "news": "Dual bearish MACD crossover on 1h and 4h timeframes directly contradicts the 48h bullish thesis", "direction": "UP", "position": "YES", "entry_price": 0.46, "estimated_prob": 0.6784155045280025, "stake": 8.0, "potential_payout": 17.39, "potential_profit": 9.39, "confidence": "LOW", "reasoning": "The 73.3% posterior is driven almost entirely by the F&G LR=2.00 update, but Extreme Fear is a multi-day/week mean-reversion signal \u2014 applying it as a strong 48h binary edge is a category error. Meanwhile, the 1h and 4h MACD both show bearish crossovers, the order book is actively ask-heavy (-0.815), and only 4/12 signals agree. The math prior of 43.8% is sound given 0.6% distance and 0.55%/h vol; the Bayesian stack is overclaiming on sentiment while discounting live structural bearishness.", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:36.065488", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-72k-on-march-18"}, {"id": "bet_002", "market": "Will the price of Bitcoin be above $70,000 on March 17?", "market_id": "1552284", "news": "Log-normal distance-to-target: $70k is 2.2% below current price in a 0.53%/h vol regime \u2014 the probabilistic floor is robust but not 93%.", "direction": "UP", "position": "YES", "entry_price": 0.72, "estimated_prob": 0.9004609741558446, "stake": 8.0, "potential_payout": 11.11, "potential_profit": 3.11, "confidence": "MEDIUM", "reasoning": "The math model's 79.1% base is sound \u2014 current price is 2.2% above the $70k threshold with only ~2.6% daily 1-sigma volatility, so the floor is defensible. However, the Bayesian jump to 93.1% is too aggressive: F&G (LR=2.00) is a multi-day mean-reversion signal being misapplied to a 24h window, the order book is genuinely ASK-heavy (-0.814) suggesting near-term selling pressure, and MACD bearish crossovers on both 1h and 4h frames are real headwinds. Only 5/12 signals agree, making the 14-point posterior boost look like overweighting of the two strongest bulls (F&G + CVD). Adjusted to ~83% \u2014 still a clear edge over the 72% market price, but not a near-certainty.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:09:45.396838", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-17"}, {"id": "bet_003", "market": "Will the price of Bitcoin be above $74,000 on March 19?", "market_id": "1568797", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.5234581349043829, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:05.311196", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-19"}, {"id": "bet_005", "market": "Will the price of Bitcoin be above $70,000 on March 18?", "market_id": "1559483", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.69, "estimated_prob": 0.8998000337148219, "stake": 8.0, "potential_payout": 11.59, "potential_profit": 3.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:21.603219", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-18"}, {"id": "bet_006", "market": "Will the price of Bitcoin be above $68,000 on March 17?", "market_id": "1552282", "news": "Price is $3,557 (5%) above the $68,000 target with 24h left in LOW volatility regime \u2014 the structural cushion is the dominant factor", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "HIGH", "reasoning": "The model's 99% estimate suffers from overconfidence bias \u2014 while the math is sound (BTC is $3,557 above target with only 24h to resolve and low vol regime), a 99% implies near-certainty that is unwarranted given the 1h bearish MACD crossover, ASK-HEAVY order book (-0.814), mixed multi-exchange funding (OKX negative), and the fact that a 5% drawdown \u2014 while unlikely \u2014 is not a 1-in-100 event in a 54% IV environment. Log-normal math gives 97%, but that model assumes clean Gaussian returns; fat tails, weekend liquidity gaps, and the bearish 1h/4h MACD signals justify a small additional haircut to ~95%.", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:27.013066", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-17"}, {"id": "bet_007", "market": "Will the price of Bitcoin be above $74,000 on March 18?", "market_id": "1559488", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.26, "estimated_prob": 0.45451419883021227, "stake": 8.0, "potential_payout": 30.77, "potential_profit": 22.77, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:10:32.108358", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-18"}, {"id": "bet_008", "market": "Will the price of Bitcoin be above $70,000 on March 19?", "market_id": "1568794", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.67, "estimated_prob": 0.8827578551591637, "stake": 8.0, "potential_payout": 11.94, "potential_profit": 3.94, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:00.470816", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-70k-on-march-19"}, {"id": "bet_009", "market": "Will the price of Bitcoin be above $74,000 on March 17?", "market_id": "1552288", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.21, "estimated_prob": 0.2993808552445522, "stake": 7.02, "potential_payout": 33.43, "potential_profit": 26.41, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:03.508341", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-74k-on-march-17"}, {"id": "bet_010", "market": "Will the price of Bitcoin be above $66,000 on March 19?", "market_id": "1568790", "news": "7.8% price buffer above target with low volatility regime (0.55%/h blended) makes a $66K breach within 72h a ~3-sigma event", "direction": "UP", "position": "YES", "entry_price": 0.9, "estimated_prob": 0.97, "stake": 8.0, "potential_payout": 8.89, "potential_profit": 0.89, "confidence": "MEDIUM", "reasoning": "The model's 98.8% posterior is overconfident given the mixed signal landscape \u2014 only 5/12 signals agree, the 1h MACD shows a bearish crossover, the order book is ASK-HEAVY (-0.814), and multi-exchange funding consensus is False. The mathematical base case is solid (BTC is 7.8% above target with 72h to go and low vol), but the Bayesian multipliers \u2014 especially F&G extreme fear at LR=2.00 \u2014 are doing heavy lifting on a contrarian signal that can persist for weeks without resolving bullishly within the specific 72h window. A 94% estimate preserves the strong structural edge while correcting for model overconfidence.", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:05.147268", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-66k-on-march-19"}, {"id": "bet_011", "market": "Will the price of Bitcoin be above $68,000 on March 19?", "market_id": "1568792", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.83, "estimated_prob": 0.9562717971088787, "stake": 8.0, "potential_payout": 9.64, "potential_profit": 1.64, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-19T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:12.117070", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-19"}, {"id": "bet_013", "market": "Will the price of Bitcoin be above $68,000 on March 18?", "market_id": "1559482", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.82, "estimated_prob": 0.97, "stake": 4.98, "potential_payout": 6.07, "potential_profit": 1.09, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-18T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-15T17:11:25.166369", "resolved_at": null, "result": null, "pl": null, "slug": "bitcoin-above-68k-on-march-18"}, {"id": "bet_014", "market": "Will Crude Oil (CL) hit (HIGH) $110 by end of March?", "market_id": "1467765", "slug": "will-crude-oil-cl-hit-high-110-by-end-of-march-732-945-787-552", "news": "Oil has ALREADY traded above $110 \u2014 Fortune headline confirms 'Oil prices soar past $110' and Brent settled above $114 on March 9, 2026; WTI hitting $110 is effectively a done deal", "direction": "UP", "position": "YES", "entry_price": 0.501, "estimated_prob": 0.7284, "stake": 15.0, "potential_payout": 29.94, "potential_profit": 14.94, "confidence": "HIGH", "reasoning": "The news evidence is unambiguous \u2014 WTI crude has already traded above $110 during the resolution window, making this a near-certainty barring a dramatic geopolitical reversal. The 50.1% market price is severely dislocated from reality, likely reflecting stale order books or uninformed liquidity. The only real risk is a precise contractual reading (e.g., requires closing price vs. intraday touch) or a sudden ceasefire, both of which are low-probability given the war's current trajectory. Edge of ~+38% makes this one of the clearest mispricings visible.", "end_date": "2026-03-31T00:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:48:56.219892", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_015", "market": "Will Crude Oil (CL) hit (HIGH) $100 by end of March?", "market_id": "1467766", "slug": "will-crude-oil-cl-hit-high-100-by-end-of-march-658-396-769-971", "news": "WTI (~$91-93) still needs ~7-10% upside in 14 days \u2014 a meaningful hurdle even in a risk-on geopolitical environment; gap is non-trivial", "direction": "DOWN", "position": "NO", "entry_price": 0.21199999999999997, "estimated_prob": 0.6812, "stake": 6.92, "potential_payout": 32.64, "potential_profit": 25.72, "confidence": "MEDIUM", "reasoning": "The 78.8% market price implies a near-certain Hormuz shock that hasn't fully materialized. With WTI ~$92 and 14 days left, the probability-weighted path to $100 is closer to 61%: roughly 75% if active Hormuz disruption persists vs. ~40% if tensions plateau. Market is pricing the bull case too heavily relative to base rates for geopolitical oil spikes resolving at new highs within 2 weeks. Edge of ~18% on the NO side is meaningful given $6.95M in volume ensuring tight spreads. Key caveat: if confirmed Hormuz blockade news breaks, reassess immediately \u2014 this view flips.", "end_date": "2026-03-31T00:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:49:18.261680", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_016", "market": "Will the price of Ethereum be above $2,300 on March 17?", "market_id": "1552229", "slug": "ethereum-above-2300-on-march-17", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.511, "estimated_prob": 0.8226195662495527, "stake": 16.0, "potential_payout": 31.31, "potential_profit": 15.31, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:20.327387", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_017", "market": "Will the price of Bitcoin be above $74,000 on March 20?", "market_id": "1576248", "slug": "bitcoin-above-74k-on-march-20", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.49, "estimated_prob": 0.6619801298923699, "stake": 16.0, "potential_payout": 32.65, "potential_profit": 16.65, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-20T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:31.249692", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_018", "market": "Will the price of Ethereum be above $2,400 on March 17?", "market_id": "1552232", "slug": "ethereum-above-2400-on-march-17", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.149, "estimated_prob": 0.34185557337601563, "stake": 16.0, "potential_payout": 107.38, "potential_profit": 91.38, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-17T16:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:41.687577", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_019", "market": "Will Bitcoin dip to $68,000 March 16-22?", "market_id": "1603559", "slug": "will-bitcoin-dip-to-68k-march-16-22", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.23, "estimated_prob": 0.6774193548387096, "stake": 16.0, "potential_payout": 69.57, "potential_profit": 53.57, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-23T04:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:53.145514", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_020", "market": "Will Bitcoin dip to $66,000 March 16-22?", "market_id": "1603561", "slug": "will-bitcoin-dip-to-66k-march-16-22", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.12, "estimated_prob": 0.6774193548387096, "stake": 16.0, "potential_payout": 133.33, "potential_profit": 117.33, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-23T04:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:53.155976", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_021", "market": "Will Bitcoin dip to $64,000 March 16-22?", "market_id": "1603564", "slug": "will-bitcoin-dip-to-64k-march-16-22", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.06, "estimated_prob": 0.6774193548387096, "stake": 16.0, "potential_payout": 266.67, "potential_profit": 250.67, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-23T04:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:57.006941", "resolved_at": null, "result": null, "pl": null}, {"id": "bet_022", "market": "Will Bitcoin dip to $70,000 March 16-22?", "market_id": "1603557", "slug": "will-bitcoin-dip-to-70k-march-16-22", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.41, "estimated_prob": 0.6774193548387096, "stake": 9.67, "potential_payout": 23.59, "potential_profit": 13.92, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-23T04:00:00Z", "status": "OPEN", "placed_at": "2026-03-16T18:51:58.911153", "resolved_at": null, "result": null, "pl": null}], "closed_bets": [{"id": "bet_004", "market": "Will the price of Bitcoin be between $72,000 and $74,000 on March 16?", "market_id": "1538172", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.29, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 27.59, "potential_profit": 19.59, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "WON", "placed_at": "2026-03-15T17:10:20.699322", "resolved_at": "2026-03-16T16:08:40.630754+00:00", "result": "WON", "pl": 19.59, "slug": "will-the-price-of-bitcoin-be-between-72000-74000-on-march-16"}, {"id": "bet_012", "market": "Will the price of Bitcoin be between $74,000 and $76,000 on March 16?", "market_id": "1538179", "news": "", "direction": "UP", "position": "YES", "entry_price": 0.09, "estimated_prob": 0.7795414462081129, "stake": 8.0, "potential_payout": 88.89, "potential_profit": 80.89, "confidence": "LOW", "reasoning": "", "end_date": "2026-03-16T16:00:00Z", "status": "LOST", "placed_at": "2026-03-15T17:11:15.601867", "resolved_at": "2026-03-16T16:08:40.630754+00:00", "result": "LOST", "pl": -8.0, "slug": "will-the-price-of-bitcoin-be-between-74000-76000-on-march-16"}], "total_pl": 11.59};
 const DECISIONS = [{"approved": false, "market_q": "Will Ethereum dip to $2,000 March 16-22?", "price": 0.18, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.735011"}, {"approved": false, "market_q": "Will the price of Ethereum be above $2,600 on March 19?", "price": 0.037, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.735250"}, {"approved": false, "market_q": "Will Ethereum reach $2,700 March 16-22?", "price": 0.11, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.735540"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $70,000 and $72,000 on March 17?", "price": 0.12, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.735735"}, {"approved": false, "market_q": "Will the price of XRP be above $1.70 on March 19?", "price": 0.044, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.735932"}, {"approved": false, "market_q": "Will the price of Bitcoin be above $66,000 on March 23?", "price": 0.94, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.736193"}, {"approved": false, "market_q": "Will the price of XRP be above $1.90 on March 20?", "price": 0.035, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.736394"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $78,000 and $80,000 on March 19?", "price": 0.04, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.736567"}, {"approved": false, "market_q": "Will the price of Bitcoin be between $76,000 and $78,000 on March 20?", "price": 0.06, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.736851"}, {"approved": false, "market_q": "Will the price of XRP be above $1.30 on March 21?", "price": 0.88, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.737177"}, {"approved": false, "market_q": "Will Bitcoin reach $84,000 March 16-22?", "price": 0.05, "reason": "Insufficient cash (\u20ac0.00)", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.737394"}, {"approved": false, "market_q": "Will the price of Ethereum be between $1,800 and $1,900 on March 21?", "price": 0.07, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.737548"}, {"approved": false, "market_q": "Will the price of XRP be above $1.90 on March 21?", "price": 0.041, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.737775"}, {"approved": false, "market_q": "Will the price of XRP be above $1.10 on March 21?", "price": 0.98, "reason": "Prefilter: Liquidity $0 < $5k minimum", "market_slug": "", "polymarket_url": "", "timestamp": "2026-03-16T19:04:14.738928"}];
-const MULTIBET = %%MULTIBET_JSON%%;
 </script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1085,139 +1084,6 @@ body::before {
 .mkt-cat-stat b { color: var(--t2); font-size: 13px; display: block; }
 
 /* ═══════════════════════════════════════
-   MULTIBET CARDS
-   ═══════════════════════════════════════ */
-.mb-card {
-  background: var(--s2);
-  border: 1px solid var(--b2);
-  border-radius: var(--r-md);
-  padding: 18px;
-  transition: border-color var(--dur), box-shadow var(--dur);
-  position: relative;
-  overflow: hidden;
-}
-.mb-card:hover {
-  border-color: var(--b3);
-  box-shadow: var(--shadow-md);
-}
-.mb-card-bet { border-left: 3px solid var(--emerald); }
-.mb-card-skip { border-left: 3px solid var(--t4); }
-.mb-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.mb-card-cat {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.mb-card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--t1);
-  line-height: 1.4;
-  flex: 1;
-}
-.mb-card-title a {
-  color: inherit;
-  text-decoration: none;
-  transition: color .15s;
-}
-.mb-card-title a:hover { color: var(--violet); }
-.mb-card-prices {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  background: var(--s1);
-  border-radius: var(--r-sm);
-}
-.mb-price-col {
-  flex: 1;
-  text-align: center;
-}
-.mb-price-label {
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--t3);
-  margin-bottom: 4px;
-}
-.mb-price-val {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 700;
-}
-.mb-price-mkt { color: var(--t2); }
-.mb-price-model { color: var(--cyan); }
-.mb-edge-badge {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: .02em;
-}
-.mb-edge-high { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
-.mb-edge-med  { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
-.mb-edge-low  { background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(255,107,107,0.2); }
-.mb-meta {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.mb-conv-bar {
-  width: 100%;
-  height: 4px;
-  background: var(--s4);
-  border-radius: 2px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-.mb-conv-fill {
-  height: 100%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--violet), var(--cyan));
-  transition: width .5s var(--ease);
-}
-.mb-reasoning {
-  font-size: 11px;
-  color: var(--t3);
-  line-height: 1.5;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--b1);
-}
-.mb-summary-card {
-  background: var(--s2);
-  border: 1px solid var(--b2);
-  border-radius: var(--r-sm);
-  padding: 12px 14px;
-  text-align: center;
-}
-.mb-summary-val {
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--t1);
-}
-.mb-summary-label {
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--t3);
-  margin-top: 4px;
-}
-
-/* ═══════════════════════════════════════
    SYSTEM ROWS
    ═══════════════════════════════════════ */
 .sys-row {
@@ -1350,11 +1216,6 @@ body::before {
     <button class="nav-btn" role="tab" aria-selected="false" data-tab="markets">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="14" height="12" rx="1"/><path d="M2 7h14M6 7v8M12 7v8"/></svg>
       Markets
-    </button>
-    <button class="nav-btn" role="tab" aria-selected="false" data-tab="multibet">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l1 3h3l-2.5 2 1 3L9 8 6.5 10l1-3L5 5h3z"/><path d="M3 14h12"/></svg>
-      ⚡ Multibet
-      <span class="nav-count" id="tn-multibet">0</span>
     </button>
 
     <div class="nav-label">System</div>
@@ -1557,34 +1418,6 @@ body::before {
       </div>
     </section>
 
-    <!-- ════ MULTIBET ════ -->
-    <section class="page" id="page-multibet" role="tabpanel" aria-hidden="true">
-      <div style="margin-bottom:20px">
-        <h2 class="page-h2">⚡ Deep Analysis</h2>
-        <p class="page-sub">Claude Opus probability estimates vs Polymarket prices — sorted by edge</p>
-      </div>
-
-      <!-- Filter buttons -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="mb-filters">
-        <button class="mkt-filter-btn active" onclick="filterMultibet('all',this)">All</button>
-        <button class="mkt-filter-btn" onclick="filterMultibet('bet',this)">✅ BET</button>
-        <button class="mkt-filter-btn" onclick="filterMultibet('skip',this)">⏭️ SKIP</button>
-        <button class="mkt-filter-btn" onclick="filterMultibet('highedge',this)">🔥 High Edge (&gt;10%)</button>
-      </div>
-
-      <!-- Summary stats -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px" id="mb-summary"></div>
-
-      <!-- Cards grid -->
-      <div id="mb-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
-
-      <div class="empty-state" id="mb-empty" style="display:none">
-        <div class="empty-state-icon">⚡</div>
-        <p class="empty-state-msg">No multibet analysis data yet</p>
-        <p class="empty-state-sub">Run the analysis script to populate this view</p>
-      </div>
-    </section>
-
     <!-- ════ SYSTEM ════ -->
     <section class="page" id="page-system" role="tabpanel" aria-hidden="true">
       <div class="grid-2">
@@ -1750,7 +1583,6 @@ tick(); setInterval(tick, 1000);
 $('tn-pos').textContent = openBets.length;
 $('tn-hist').textContent = closedBets.length;
 $('tn-dec').textContent = DECISIONS.length;
-$('tn-multibet').textContent = MULTIBET.length;
 
 // ══════════════════════════════════════
 // NAVIGATION
@@ -1762,8 +1594,6 @@ const pageTitles = {
   positions: 'Positions',
   history: 'History',
   decisions: 'Decisions',
-  markets: 'Markets',
-  multibet: '⚡ Multibet',
   system: 'Config'
 };
 
@@ -2381,110 +2211,6 @@ window.toggleDec = function(i) {
     document.querySelectorAll('.mkt-filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderMktTable(cat);
-  };
-})();
-
-// ══════════════════════════════════════
-// MULTIBET DEEP ANALYSIS
-// ══════════════════════════════════════
-(function() {
-  if (!MULTIBET || !MULTIBET.length) {
-    const empty = $('mb-empty');
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-
-  const catIcons = {
-    'POLITICS': '🏛️', 'GEOPOLITICS': '🌍', 'SPORTS': '⚽', 'MACRO': '📈',
-    'TECH/BUSINESS': '💼', 'POP CULTURE': '🎬', 'SCIENCE/HEALTH': '🔬',
-    'CRYPTO': '🪙', 'GENERAL': '❓'
-  };
-
-  function edgeClass(e) {
-    return e >= 0.10 ? 'mb-edge-high' : e >= 0.04 ? 'mb-edge-med' : 'mb-edge-low';
-  }
-
-  function renderSummary(data) {
-    const bets = data.filter(d => d.approved);
-    const skips = data.filter(d => !d.approved);
-    const avgEdge = data.length ? data.reduce((s,d) => s + d.edge, 0) / data.length : 0;
-    const maxEdge = data.length ? Math.max(...data.map(d => d.edge)) : 0;
-    const html = `
-      <div class="mb-summary-card"><div class="mb-summary-val">${data.length}</div><div class="mb-summary-label">Total Markets</div></div>
-      <div class="mb-summary-card"><div class="mb-summary-val clr-green">${bets.length}</div><div class="mb-summary-label">BET Signals</div></div>
-      <div class="mb-summary-card"><div class="mb-summary-val clr-dim">${skips.length}</div><div class="mb-summary-label">SKIP</div></div>
-      <div class="mb-summary-card"><div class="mb-summary-val clr-blue">${(avgEdge*100).toFixed(1)}%</div><div class="mb-summary-label">Avg Edge</div></div>
-      <div class="mb-summary-card"><div class="mb-summary-val clr-green">${(maxEdge*100).toFixed(1)}%</div><div class="mb-summary-label">Max Edge</div></div>
-    `;
-    $('mb-summary').innerHTML = html;
-  }
-
-  function renderCards(data) {
-    if (!data.length) {
-      $('mb-grid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p class="empty-state-msg">No markets match this filter</p></div>';
-      return;
-    }
-    $('mb-grid').innerHTML = data.map((d, i) => {
-      const icon = catIcons[d.category] || '❓';
-      const edgePct = (d.edge * 100).toFixed(1);
-      const eCls = edgeClass(d.edge);
-      const mktPct = (d.market_price * 100).toFixed(1);
-      const modPct = (d.model_prob * 100).toFixed(1);
-      const verdict = d.approved;
-      const volStr = d.volume >= 1e6 ? '$' + (d.volume/1e6).toFixed(0) + 'M' : '$' + (d.volume/1e3).toFixed(0) + 'K';
-      const factors = (d.key_factors || []).slice(0, 3).map(f => `<span style="display:inline-block;font-size:10px;padding:2px 7px;background:var(--s3);border-radius:4px;color:var(--t2);margin:2px 4px 2px 0">${f.length > 50 ? f.slice(0,50)+'…' : f}</span>`).join('');
-      const reasoning = d.reasoning ? (d.reasoning.length > 200 ? d.reasoning.slice(0,200) + '…' : d.reasoning) : '';
-
-      return `<div class="mb-card ${verdict ? 'mb-card-bet' : 'mb-card-skip'} stagger" data-approved="${d.approved}" data-edge="${d.edge}">
-        <div class="mb-card-header">
-          <span class="mb-card-cat">${icon}</span>
-          <div class="mb-card-title"><a href="${d.polymarket_url}" target="_blank" rel="noopener">${d.market_q}</a></div>
-          <span class="pill ${verdict ? 'pill-bet' : 'pill-skip'}" style="flex-shrink:0">${verdict ? 'BET' : 'SKIP'}</span>
-        </div>
-        <div class="mb-card-prices">
-          <div class="mb-price-col">
-            <div class="mb-price-label">Market</div>
-            <div class="mb-price-val mb-price-mkt">${mktPct}%</div>
-          </div>
-          <div style="width:1px;background:var(--b2)"></div>
-          <div class="mb-price-col">
-            <div class="mb-price-label">Model</div>
-            <div class="mb-price-val mb-price-model">${modPct}%</div>
-          </div>
-          <div style="width:1px;background:var(--b2)"></div>
-          <div class="mb-price-col">
-            <div class="mb-price-label">Edge</div>
-            <div class="mb-price-val"><span class="mb-edge-badge ${eCls}">${d.direction === 'NO' ? '▼' : '▲'} ${edgePct}%</span></div>
-          </div>
-        </div>
-        <div class="mb-meta">
-          <span class="pill pill-conf-${d.confidence === 'HIGH' ? 'high' : d.confidence === 'MEDIUM' ? 'med' : 'low'}">${d.confidence}</span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--t3)">Conv: ${d.conviction}/100</span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--t3)">${d.direction} @ ${volStr}</span>
-          ${d.stake_suggested > 0 ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--emerald)">€${d.stake_suggested.toFixed(2)}</span>` : ''}
-        </div>
-        <div class="mb-conv-bar"><div class="mb-conv-fill" style="width:${d.conviction}%"></div></div>
-        ${factors ? `<div style="margin-top:10px">${factors}</div>` : ''}
-        ${reasoning ? `<div class="mb-reasoning">${reasoning}</div>` : ''}
-      </div>`;
-    }).join('');
-  }
-
-  // Sort by edge descending (already sorted from script, but ensure)
-  MULTIBET.sort((a, b) => Math.abs(b.edge) - Math.abs(a.edge));
-
-  renderSummary(MULTIBET);
-  renderCards(MULTIBET);
-
-  window.filterMultibet = function(filter, btn) {
-    document.querySelectorAll('#mb-filters .mkt-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    let filtered = MULTIBET;
-    if (filter === 'bet') filtered = MULTIBET.filter(d => d.approved);
-    else if (filter === 'skip') filtered = MULTIBET.filter(d => !d.approved);
-    else if (filter === 'highedge') filtered = MULTIBET.filter(d => d.edge >= 0.10);
-    renderSummary(filtered);
-    renderCards(filtered);
   };
 })();
 </script>
